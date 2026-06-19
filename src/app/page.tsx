@@ -215,6 +215,7 @@ export default function Home() {
                     key={group.letter} 
                     group={group} 
                     searchQuery={searchQuery}
+                    fixtures={data.fixtures}
                   />
                 ))}
               </div>
