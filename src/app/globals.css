@@ -1,49 +1,47 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import "tailwindcss";
+
+@theme {
+  --color-deep-navy: #0A1128;
+  --color-stadium-indigo: #131B35;
+  --color-pitch-border: #222C4E;
+  
+  --color-electric-purple: #6A0DAD;
+  --color-cyber-orchid: #9D4EDD;
+  
+  --color-volt-yellow: #CCFF00;
+  --color-neon-teal: #00F5D4;
+  
+  --color-stadium-gray: #8C9AB5;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base resets and background coloring */
+html, body {
+  background-color: var(--color-deep-navy);
+  color: #FFFFFF;
 }
 
-html {
-  height: 100%;
-}
-
-html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(106, 13, 173, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(0, 245, 212, 0.02) 0%, transparent 40%);
+  background-attachment: fixed;
 }
 
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+::-webkit-scrollbar-track {
+  background: var(--color-deep-navy);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+::-webkit-scrollbar-thumb {
+  background: var(--color-pitch-border);
+  border-radius: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-electric-purple);
 }
