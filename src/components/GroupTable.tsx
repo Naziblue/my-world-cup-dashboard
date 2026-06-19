@@ -4,14 +4,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Group, Team, Fixture } from '@/types';
 import { Trophy } from 'lucide-react';
+import { t, translateTeam, formatNumber } from '@/utils/i18n';
 
 interface GroupTableProps {
   group: Group;
   searchQuery: string;
   fixtures: Fixture[];
+  lang: 'en' | 'fa';
 }
 
-export default function GroupTable({ group, searchQuery, fixtures }: GroupTableProps) {
+export default function GroupTable({ group, searchQuery, fixtures, lang }: GroupTableProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -62,6 +64,8 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
     })
   };
 
+  const isRTL = lang === 'fa';
+
   return (
     <motion.div 
       className="h-[310px] w-full relative cursor-pointer select-none"
@@ -94,30 +98,30 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
 
           <div>
             <div className="text-base font-bold pb-2.5 mb-3 text-white border-b border-pitch-border flex justify-between items-center">
-              <span>Group {group.letter}</span>
+              <span>{t('Group', lang)} {group.letter}</span>
               <div className="flex gap-1.5 items-center">
                 {hasMatchingTeam && searchQuery !== '' && (
                   <span className="text-[9px] bg-neon-teal/10 text-neon-teal px-2 py-0.5 rounded-full border border-neon-teal/20 font-bold uppercase tracking-wider">
-                    Match
+                    {t('Match', lang)}
                   </span>
                 )}
                 <span className="text-[9px] bg-pitch-border text-stadium-gray px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                  View Games
+                  {t('View Games', lang)}
                 </span>
               </div>
             </div>
             
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-xs border-collapse text-start">
               <thead>
-                <tr className="text-stadium-gray font-semibold uppercase tracking-wider border-b border-pitch-border/50">
+                <tr className="text-stadium-gray font-semibold uppercase tracking-wider border-b border-pitch-border/50 text-start">
                   <th className="py-1.5 px-1 text-center w-8">#</th>
-                  <th className="py-1.5 px-1">Team</th>
-                  <th className="py-1.5 px-1 text-center w-7">P</th>
-                  <th className="py-1.5 px-1 text-center w-7">W</th>
-                  <th className="py-1.5 px-1 text-center w-7">D</th>
-                  <th className="py-1.5 px-1 text-center w-7">L</th>
-                  <th className="py-1.5 px-1 text-center w-9">GD</th>
-                  <th className="py-1.5 px-1 text-center w-9 font-bold text-white">Pts</th>
+                  <th className="py-1.5 px-1 text-start">{t('Team', lang)}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'بازی' : 'P'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'برد' : 'W'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'مساوی' : 'D'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'باخت' : 'L'}</th>
+                  <th className="py-1.5 px-1 text-center w-9">{isRTL ? 'تفاضل' : 'GD'}</th>
+                  <th className="py-1.5 px-1 text-center w-9 font-bold text-white">{isRTL ? 'امتیاز' : 'Pts'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-pitch-border/30">
@@ -146,32 +150,33 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
                       animate="visible"
                       style={{
                         backgroundColor: isSearched ? 'rgba(106, 13, 173, 0.15)' : undefined,
-                        borderLeft: isSearched ? '3px solid var(--color-electric-purple)' : undefined,
+                        borderLeft: isRTL ? undefined : (isSearched ? '3px solid var(--color-electric-purple)' : undefined),
+                        borderRight: isRTL ? (isSearched ? '3px solid var(--color-electric-purple)' : undefined) : undefined,
                       }}
                     >
                       <td className={`py-2 px-1 text-center font-bold font-mono ${rankColor}`}>
-                        {rank}
+                        {formatNumber(rank, lang)}
                       </td>
-                      <td className="py-2 px-1">
+                      <td className="py-2 px-1 text-start">
                         <div className="flex items-center gap-1.5 font-bold text-slate-100">
                           <span className="text-base leading-none" role="img" aria-label={`${team.name} Flag`}>
                             {team.flag}
                           </span>
-                          <span className="truncate max-w-[105px]">{team.name}</span>
+                          <span className="truncate max-w-[105px]">{translateTeam(team.name, lang)}</span>
                           <span className="text-[9px] text-stadium-gray/80 font-normal">{team.code}</span>
-                          {rank === 1 && <Trophy size={10} className="text-volt-yellow ml-0.5 shrink-0" />}
+                          {rank === 1 && <Trophy size={10} className="text-volt-yellow shrink-0" />}
                         </div>
                       </td>
-                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{team.played}</td>
-                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{team.won}</td>
-                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{team.drawn}</td>
-                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{team.lost}</td>
+                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.played, lang)}</td>
+                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.won, lang)}</td>
+                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.drawn, lang)}</td>
+                      <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.lost, lang)}</td>
                       <td className={`py-2 px-1 text-center font-mono font-semibold ${
                         team.goalDifference > 0 ? 'text-neon-teal' : team.goalDifference < 0 ? 'text-rose-400' : 'text-stadium-gray'
                       }`}>
-                        {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                        {team.goalDifference > 0 ? `+${formatNumber(team.goalDifference, lang)}` : formatNumber(team.goalDifference, lang)}
                       </td>
-                      <td className="py-2 px-1 text-center font-mono font-bold text-white">{team.points}</td>
+                      <td className="py-2 px-1 text-center font-mono font-bold text-white">{formatNumber(team.points, lang)}</td>
                     </motion.tr>
                   );
                 })}
@@ -196,10 +201,10 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
             <div className="text-xs font-bold pb-2.5 mb-2.5 border-b border-rose-500/20 flex justify-between items-center text-white">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                Group {group.letter} Schedule
+                {t('Group', lang)} {group.letter} {t('Schedule', lang)}
               </span>
               <span className="text-[9px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
-                View Tables
+                {t('View Tables', lang)}
               </span>
             </div>
 
@@ -207,7 +212,7 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
             <div className="flex-1 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
               {groupFixtures.length === 0 ? (
                 <div className="text-center py-10 text-[11px] text-rose-300/40 font-medium">
-                  No fixtures loaded for this group.
+                  {t('No fixtures loaded for this group.', lang)}
                 </div>
               ) : (
                 groupFixtures.map((fix) => {
@@ -215,11 +220,13 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
                   const isFinished = fix.status.short === 'FT';
                   
                   const matchDate = new Date(fix.date);
+                  const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
+                  
                   const formattedTime = isMounted 
-                    ? matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }) 
+                    ? matchDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }) 
                     : '';
                   const formattedDate = isMounted 
-                    ? matchDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) 
+                    ? matchDate.toLocaleDateString(locale, { month: 'short', day: 'numeric' }) 
                     : '';
 
                   return (
@@ -235,7 +242,7 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
                           <span className={`text-[11px] font-bold truncate text-rose-100 ${
                             searchQuery && fix.teams.home.name.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-volt-yellow font-black' : ''
                           }`}>
-                            {fix.teams.home.name}
+                            {translateTeam(fix.teams.home.name, lang)}
                           </span>
                         </div>
                         {/* Away team */}
@@ -244,34 +251,35 @@ export default function GroupTable({ group, searchQuery, fixtures }: GroupTableP
                           <span className={`text-[11px] font-bold truncate text-rose-100 ${
                             searchQuery && fix.teams.away.name.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-volt-yellow font-black' : ''
                           }`}>
-                            {fix.teams.away.name}
+                            {translateTeam(fix.teams.away.name, lang)}
                           </span>
                         </div>
                       </div>
 
                       {/* Score / Time Badge */}
-                      <div className="text-right shrink-0 flex flex-col items-end justify-center min-w-[75px]">
+                      <div className="shrink-0 flex flex-col items-end justify-center min-w-[75px] text-end">
                         {isLive ? (
                           <div className="flex flex-col items-end">
                             <span className="text-[11px] font-black text-rose-400 font-mono">
-                              {fix.goals.home} - {fix.goals.away}
+                              {formatNumber(fix.goals.home, lang)} - {formatNumber(fix.goals.away, lang)}
                             </span>
                             <span className="text-[8px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-1 rounded font-black tracking-widest animate-pulse mt-0.5">
-                              {fix.status.short === 'HT' ? 'HT' : `${fix.status.elapsed}'`}
+                              {fix.status.short === 'HT' ? t('HT', lang) : formatNumber(fix.status.elapsed, lang) + '\''}
                             </span>
                           </div>
                         ) : isFinished ? (
                           <div className="flex flex-col items-end">
                             <span className="text-[11px] font-bold text-slate-100 font-mono">
-                              {fix.goals.home} - {fix.goals.away}
+                              {formatNumber(fix.goals.home, lang)} - {formatNumber(fix.goals.away, lang)}
                             </span>
                             <span className="text-[8px] text-rose-300/40 font-bold mt-0.5">
-                              FINAL
+                              {t('FINAL', lang)}
                             </span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-end">
                             <span className="text-[10px] font-bold text-neon-teal font-mono truncate max-w-[70px]">
+                              {/* Strip timezone from time string to fit in box */}
                               {formattedTime.replace(' ' + formattedTime.split(' ').pop(), '')}
                             </span>
                             <span className="text-[8px] text-rose-300/50 font-semibold mt-0.5">

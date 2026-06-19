@@ -4,13 +4,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Fixture } from '@/types';
 import { Radio } from 'lucide-react';
+import { t, translateTeam, formatNumber } from '@/utils/i18n';
 
 interface LiveMatchesProps {
   fixtures: Fixture[];
   nextRefreshSeconds: number;
+  lang: 'en' | 'fa';
 }
 
-export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatchesProps) {
+export default function LiveMatches({ fixtures, nextRefreshSeconds, lang }: LiveMatchesProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -29,7 +31,8 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
   // Format kickoff time in user's local timezone with timezone abbreviation
   const formatKickoff = (dateStr: string) => {
     const d = new Date(dateStr);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+    const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
+    return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
   };
 
   // Filter fixtures to only today's games in the user's local timezone
@@ -99,10 +102,10 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
         <div className="flex items-center gap-2">
           <Radio className="text-rose-500 animate-pulse" size={18} />
           <h2 className="text-xs uppercase font-extrabold tracking-widest text-white flex items-center gap-2">
-            Live &amp; Today's Matches
+            {t('Live & Today\'s Matches', lang)}
             {displayedFixtures.some(f => isMatchLive(f.status.short)) && (
               <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] px-1.5 py-0.5 rounded font-black tracking-widest uppercase animate-pulse">
-                LIVE NOW
+                {t('LIVE NOW', lang)}
               </span>
             )}
           </h2>
@@ -112,13 +115,13 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-teal opacity-75"></span>
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-neon-teal"></span>
           </span>
-          Auto-sync: {nextRefreshSeconds}s
+          {t('Auto-sync:', lang)} {formatNumber(nextRefreshSeconds, lang)}s
         </div>
       </div>
 
       {displayedFixtures.length === 0 ? (
         <div className="bg-stadium-indigo border border-pitch-border p-6 rounded-2xl text-center text-xs text-stadium-gray">
-          No matches scheduled for today.
+          {t('No matches scheduled for today.', lang)}
         </div>
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin">
@@ -140,17 +143,17 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
                 {/* Header: Status / Stage */}
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[9px] font-bold text-stadium-gray tracking-wider uppercase">
-                    Group Stage
+                    {t('Group Stage', lang)}
                   </span>
                   
                   {live ? (
                     <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] px-2 py-0.5 rounded-full font-black flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
-                      {fixture.status.short === 'HT' ? 'HT' : `${fixture.status.elapsed}'`}
+                      {fixture.status.short === 'HT' ? t('HT', lang) : formatNumber(fixture.status.elapsed, lang) + '\''}
                     </span>
                   ) : finished ? (
                     <span className="bg-pitch-border text-stadium-gray border border-pitch-border/50 text-[9px] px-2 py-0.5 rounded-full font-black">
-                      FT
+                      {t('FT', lang)}
                     </span>
                   ) : (
                     <span className="bg-deep-navy text-neon-teal border border-neon-teal/10 text-[9px] px-2 py-0.5 rounded-full font-bold">
@@ -166,12 +169,12 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
                     <div className="flex items-center gap-2.5">
                       <span className="text-base shrink-0">{fixture.teams.home.flag}</span>
                       <span className="text-xs md:text-sm font-semibold tracking-tight text-white line-clamp-1">
-                        {fixture.teams.home.name}
+                        {translateTeam(fixture.teams.home.name, lang)}
                       </span>
                     </div>
                     {(live || finished) && (
                       <span className={`text-base font-extrabold ${live ? 'text-rose-400' : 'text-white'}`}>
-                        {fixture.goals.home}
+                        {formatNumber(fixture.goals.home, lang)}
                       </span>
                     )}
                   </div>
@@ -181,12 +184,12 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
                     <div className="flex items-center gap-2.5">
                       <span className="text-base shrink-0">{fixture.teams.away.flag}</span>
                       <span className="text-xs md:text-sm font-semibold tracking-tight text-white line-clamp-1">
-                        {fixture.teams.away.name}
+                        {translateTeam(fixture.teams.away.name, lang)}
                       </span>
                     </div>
                     {(live || finished) && (
                       <span className={`text-base font-extrabold ${live ? 'text-rose-400' : 'text-white'}`}>
-                        {fixture.goals.away}
+                        {formatNumber(fixture.goals.away, lang)}
                       </span>
                     )}
                   </div>
@@ -195,20 +198,20 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds }: LiveMatche
                 {/* Footer details */}
                 {!live && !finished && (
                   <div className="mt-3.5 pt-2 border-t border-pitch-border/30 flex justify-between items-center text-[9px] text-stadium-gray font-bold">
-                    <span>MATCHDAY 2</span>
-                    <span>16 Venues</span>
+                    <span>{t('MATCHDAY 2', lang)}</span>
+                    <span>{t('16 Venues', lang)}</span>
                   </div>
                 )}
                 {live && (
                   <div className="mt-3.5 pt-2 border-t border-rose-950/20 flex justify-between items-center text-[9px] text-rose-400/80 font-bold animate-pulse">
-                    <span>LIVE IN PROGRESS</span>
-                    <span>{fixture.status.long}</span>
+                    <span>{t('LIVE IN PROGRESS', lang)}</span>
+                    <span>{lang === 'fa' ? 'در حال پخش' : fixture.status.long}</span>
                   </div>
                 )}
                 {finished && (
                   <div className="mt-3.5 pt-2 border-t border-pitch-border/30 flex justify-between items-center text-[9px] text-stadium-gray font-medium">
-                    <span>COMPLETED MATCH</span>
-                    <span className="text-neon-teal">FINAL</span>
+                    <span>{t('COMPLETED MATCH', lang)}</span>
+                    <span className="text-neon-teal">{t('FINAL', lang)}</span>
                   </div>
                 )}
               </motion.div>
