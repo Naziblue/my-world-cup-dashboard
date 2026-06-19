@@ -264,8 +264,21 @@ function getTeamMetadata(name: string) {
   return { code, flag: '🏳️' };
 }
 
+// Shared in-memory cache for all requests (15s duration) to protect external API rate limits
+let cachedResponse: {
+  timestamp: number;
+  data: any;
+} | null = null;
+const CACHE_TTL_MS = 15000; // 15 seconds
+
 export async function GET(request: Request) {
   try {
+    const now = Date.now();
+    if (cachedResponse && (now - cachedResponse.timestamp < CACHE_TTL_MS)) {
+      console.log(`[API Secure Cache]: Serving shared server cache. TTL remaining: ${CACHE_TTL_MS - (now - cachedResponse.timestamp)}ms.`);
+      return NextResponse.json(cachedResponse.data);
+    }
+
     const apiKey = process.env.WORLD_CUP_API_KEY;
     const standingsUrl = 'https://v3.football.api-sports.io/standings?league=1&season=2026';
     const fixturesUrl = 'https://v3.football.api-sports.io/fixtures?league=1&season=2026';
@@ -409,14 +422,32 @@ export async function GET(request: Request) {
       fixtures = mockWorldCupFixtures;
     }
 
-    return NextResponse.json({
+    const responsePayload = {
       success: true,
       lastUpdated: new Date().toISOString(),
       groups,
       fixtures
-    });
+    };
+
+    // Cache the response globally
+    cachedResponse = {
+      timestamp: Date.now(),
+      data: responsePayload
+    };
+
+    return NextResponse.json(responsePayload);
   } catch (error: any) {
     console.error(`[API Secure Backend Error]:`, error);
+
+    // Serve stale cache if available when an error happens
+    if (cachedResponse) {
+      console.log(`[API Secure Cache]: Serving stale cache on request failure.`);
+      return NextResponse.json({
+        ...cachedResponse.data,
+        warning: `API connection issue (${error.message || 'fetch error'}). Serving stale cache.`
+      });
+    }
+
     return NextResponse.json({
       success: true,
       lastUpdated: new Date().toISOString(),
