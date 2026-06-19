@@ -178,14 +178,133 @@ const teamMetadata: Record<string, { code: string; flag: string }> = {
 
 // Mock World Cup 2026 Fixtures Data (serving as high-quality fallback)
 const mockWorldCupFixtures: Fixture[] = [
+  // --- Group A matches ---
+  {
+    id: 1001,
+    date: '2026-06-11T19:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Mexico', code: 'MEX', flag: '🇲🇽', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'South Africa', code: 'RSA', flag: '🇿🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 1, away: 1 }
+  },
+  {
+    id: 1002,
+    date: '2026-06-12T15:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Korea Republic', code: 'KOR', flag: '🇰🇷', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Czechia', code: 'CZE', flag: '🇨🇿', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 1, away: 2 }
+  },
+  {
+    id: 1539004,
+    date: '2026-06-18T16:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Czechia', code: 'CZE', flag: '🇨🇿', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'South Africa', code: 'RSA', flag: '🇿🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 1, away: 1 }
+  },
+  {
+    id: 1489388,
+    date: '2026-06-19T01:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Mexico', code: 'MEX', flag: '🇲🇽', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Korea Republic', code: 'KOR', flag: '🇰🇷', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 1, away: 0 }
+  },
+  {
+    id: 1003,
+    date: '2026-06-24T18:00:00+00:00',
+    status: { long: 'Not Started', short: 'NS', elapsed: null },
+    teams: {
+      home: { name: 'South Africa', code: 'RSA', flag: '🇿🇦', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Korea Republic', code: 'KOR', flag: '🇰🇷', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: null, away: null }
+  },
+  {
+    id: 1004,
+    date: '2026-06-24T21:00:00+00:00',
+    status: { long: 'Not Started', short: 'NS', elapsed: null },
+    teams: {
+      home: { name: 'Czechia', code: 'CZE', flag: '🇨🇿', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Mexico', code: 'MEX', flag: '🇲🇽', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: null, away: null }
+  },
+  // --- Group B matches ---
+  {
+    id: 2001,
+    date: '2026-06-12T18:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Switzerland', code: 'SUI', flag: '🇨🇭', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Qatar', code: 'QAT', flag: '🇶🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 2, away: 1 }
+  },
+  {
+    id: 2002,
+    date: '2026-06-13T21:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Canada', code: 'CAN', flag: '🇨🇦', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Bosnia & Herzegovina', code: 'BIH', flag: '🇧🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 2, away: 2 }
+  },
+  {
+    id: 1539005,
+    date: '2026-06-18T19:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Switzerland', code: 'SUI', flag: '🇨🇭', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Bosnia & Herzegovina', code: 'BIH', flag: '🇧🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 4, away: 1 }
+  },
+  {
+    id: 1489387,
+    date: '2026-06-18T22:00:00+00:00',
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
+    teams: {
+      home: { name: 'Canada', code: 'CAN', flag: '🇨🇦', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Qatar', code: 'QAT', flag: '🇶🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: 6, away: 0 }
+  },
+  {
+    id: 2003,
+    date: '2026-06-24T18:00:00+00:00',
+    status: { long: 'Not Started', short: 'NS', elapsed: null },
+    teams: {
+      home: { name: 'Qatar', code: 'QAT', flag: '🇶🇦', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Bosnia & Herzegovina', code: 'BIH', flag: '🇧🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: null, away: null }
+  },
+  {
+    id: 2004,
+    date: '2026-06-24T21:00:00+00:00',
+    status: { long: 'Not Started', short: 'NS', elapsed: null },
+    teams: {
+      home: { name: 'Switzerland', code: 'SUI', flag: '🇨🇭', logo: 'https://media.api-sports.io/football/teams/1533.png' },
+      away: { name: 'Canada', code: 'CAN', flag: '🇨🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
+    },
+    goals: { home: null, away: null }
+  },
+  // --- Live & other matches ---
   {
     id: 1489390,
     date: '2026-06-19T22:00:00+00:00',
-    status: {
-      long: 'Halftime',
-      short: 'HT',
-      elapsed: 45
-    },
+    status: { long: 'Halftime', short: 'HT', elapsed: 45 },
     teams: {
       home: { name: 'Scotland', code: 'SCO', flag: '🏴\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F', logo: 'https://media.api-sports.io/football/teams/1533.png' },
       away: { name: 'Morocco', code: 'MAR', flag: '🇲🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
@@ -195,11 +314,7 @@ const mockWorldCupFixtures: Fixture[] = [
   {
     id: 1489391,
     date: '2026-06-19T19:00:00+00:00',
-    status: {
-      long: 'Match Finished',
-      short: 'FT',
-      elapsed: 90
-    },
+    status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
     teams: {
       home: { name: 'United States', code: 'USA', flag: '🇺🇸', logo: 'https://media.api-sports.io/football/teams/32.png' },
       away: { name: 'Australia', code: 'AUS', flag: '🇦🇺', logo: 'https://media.api-sports.io/football/teams/22.png' }
@@ -207,27 +322,9 @@ const mockWorldCupFixtures: Fixture[] = [
     goals: { home: 2, away: 0 }
   },
   {
-    id: 1489388,
-    date: '2026-06-19T01:00:00+00:00',
-    status: {
-      long: 'Match Finished',
-      short: 'FT',
-      elapsed: 90
-    },
-    teams: {
-      home: { name: 'Mexico', code: 'MEX', flag: '🇲🇽', logo: 'https://media.api-sports.io/football/teams/1533.png' },
-      away: { name: 'Korea Republic', code: 'KOR', flag: '🇰🇷', logo: 'https://media.api-sports.io/football/teams/23.png' }
-    },
-    goals: { home: 1, away: 0 }
-  },
-  {
     id: 1489389,
     date: '2026-06-20T00:30:00+00:00',
-    status: {
-      long: 'Not Started',
-      short: 'NS',
-      elapsed: null
-    },
+    status: { long: 'Not Started', short: 'NS', elapsed: null },
     teams: {
       home: { name: 'Brazil', code: 'BRA', flag: '🇧🇷', logo: 'https://media.api-sports.io/football/teams/1.png' },
       away: { name: 'Haiti', code: 'HAI', flag: '🇭🇹', logo: 'https://media.api-sports.io/football/teams/4673.png' }
@@ -237,11 +334,7 @@ const mockWorldCupFixtures: Fixture[] = [
   {
     id: 1539006,
     date: '2026-06-20T03:00:00+00:00',
-    status: {
-      long: 'Not Started',
-      short: 'NS',
-      elapsed: null
-    },
+    status: { long: 'Not Started', short: 'NS', elapsed: null },
     teams: {
       home: { name: 'Türkiye', code: 'TUR', flag: '🇹🇷', logo: 'https://media.api-sports.io/football/teams/1533.png' },
       away: { name: 'Paraguay', code: 'PAR', flag: '🇵🇾', logo: 'https://media.api-sports.io/football/teams/23.png' }
@@ -401,15 +494,6 @@ export async function GET(request: Request) {
               away: item.goals.away
             }
           };
-        })
-        .filter((fix: Fixture) => {
-          // Keep active live games (1H, 2H, HT, ET, P, etc.)
-          const isLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(fix.status.short);
-          if (isLive) return true;
-          
-          // Keep matches close to June 19, 2026 (June 17 to 22, to cover all timezone offsets)
-          const matchDate = fix.date.substring(0, 10);
-          return ['2026-06-17', '2026-06-18', '2026-06-19', '2026-06-20', '2026-06-21', '2026-06-22'].includes(matchDate);
         })
         .sort((a: Fixture, b: Fixture) => {
           const isALive = ['1H', '2H', 'HT', 'ET', 'P'].includes(a.status.short);
