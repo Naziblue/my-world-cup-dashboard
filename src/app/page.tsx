@@ -6,6 +6,7 @@ import { Group, StandingsResponse } from '@/types';
 import GroupTable from '@/components/GroupTable';
 import ThirdPlaceTable from '@/components/ThirdPlaceTable';
 import LiveMatches from '@/components/LiveMatches';
+import KnockoutBracket from '@/components/KnockoutBracket';
 import { 
   Trophy, 
   Search, 
@@ -24,7 +25,7 @@ export default function Home() {
   const [data, setData] = useState<StandingsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'groups' | 'third-place' | 'info'>('groups');
+  const [activeTab, setActiveTab] = useState<'groups' | 'third-place' | 'bracket' | 'info'>('groups');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [nextRefreshSeconds, setNextRefreshSeconds] = useState<number>(15);
@@ -162,6 +163,17 @@ export default function Home() {
           </button>
           <button 
             className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'bracket' 
+                ? 'bg-electric-purple text-white border border-cyber-orchid/30' 
+                : 'text-stadium-gray hover:bg-deep-navy hover:text-white border border-transparent'
+            }`}
+            onClick={() => setActiveTab('bracket')}
+          >
+            <Trophy size={14} />
+            {t('Knockout Bracket', lang)}
+          </button>
+          <button 
+            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'info' 
                 ? 'bg-electric-purple text-white border border-cyber-orchid/30' 
                 : 'text-stadium-gray hover:bg-deep-navy hover:text-white border border-transparent'
@@ -173,7 +185,7 @@ export default function Home() {
           </button>
         </div>
 
-        {activeTab !== 'info' && (
+        {activeTab !== 'info' && activeTab !== 'bracket' && (
           <div className="relative w-full sm:max-w-xs">
             <Search size={14} className={`absolute top-1/2 -translate-y-1/2 text-stadium-gray pointer-events-none ${lang === 'fa' ? 'right-3' : 'left-3'}`} />
             <input 
@@ -247,6 +259,10 @@ export default function Home() {
                 searchQuery={searchQuery}
                 lang={lang}
               />
+            )}
+
+            {activeTab === 'bracket' && data && (
+              <KnockoutBracket groups={data.groups} lang={lang} />
             )}
 
             {activeTab === 'info' && (

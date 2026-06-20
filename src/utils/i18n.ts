@@ -136,7 +136,34 @@ const uiTranslations: Record<string, string> = {
   'Standings update immediately in real-time as goals are scored.': 'جدول رده‌بندی بلافاصله با به ثمر رسیدن هر گل به صورت زنده بروز می‌شود.',
   'Error Loading Dashboard': 'خطا در بارگذاری داشبورد',
   'Try Again': 'تلاش دوباره',
-  'RETRIEVING LIVE STANDINGS...': 'در حال دریافت اطلاعات زنده...'
+  'RETRIEVING LIVE STANDINGS...': 'در حال دریافت اطلاعات زنده...',
+
+  // Knockout Bracket tab
+  'Knockout Bracket': 'جدول حذفی',
+  'Wall Chart': 'نمودار دیواری',
+  'Interactive Knockout Bracket': 'جدول حذفی تعاملی',
+  'Based on current standings. Click a team to predict the winner.': 'بر اساس جدول فعلی. روی تیم کلیک کنید تا برنده را پیش‌بینی کنید.',
+  'Reset Predictions': 'پاک کردن پیش‌بینی‌ها',
+  'Your Predicted Champion': 'قهرمان پیش‌بینی شده شما',
+  'Champion': 'قهرمان',
+  'Round of 32': 'یک‌شانزدهم نهایی',
+  'Round of 16': 'یک‌هشتم نهایی',
+  'Quarterfinal': 'یک‌چهارم نهایی',
+  'Semifinal': 'نیمه‌نهایی',
+  'Final': 'فینال',
+  'R32': 'یک‌شانزدهم',
+  'R16': 'یک‌هشتم',
+  'QF': 'یک‌چهارم',
+  'SF': 'نیمه‌نهایی',
+  'Winner Group': 'اول گروه',
+  'Runner-up Group': 'دوم گروه',
+  '3rd Place': 'سوم',
+  'TBD': 'مشخص نشده',
+  'Click to predict': 'کلیک برای پیش‌بینی',
+  'Scroll to navigate': 'برای جابجایی اسکرول کنید',
+  'Left': 'چپ',
+  'Center': 'مرکز',
+  'Right': 'راست'
 };
 
 // Translate helper for UI text
