@@ -162,36 +162,35 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang }: Live
                   )}
                 </div>
 
-                {/* Teams & Score Grid */}
-                <div className="flex flex-col gap-2.5">
+                {/* Teams & Score Row */}
+                <div className="flex items-center justify-between gap-1.5 my-3">
                   {/* Home Team */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-base shrink-0">{fixture.teams.home.flag}</span>
-                      <span className="text-xs md:text-sm font-semibold tracking-tight text-white line-clamp-1">
-                        {translateTeam(fixture.teams.home.name, lang)}
+                  <div className="flex items-center gap-2 flex-1 min-w-0 justify-start text-start">
+                    <span className="text-base shrink-0">{fixture.teams.home.flag}</span>
+                    <span className="text-xs md:text-sm font-semibold tracking-tight text-white truncate">
+                      {translateTeam(fixture.teams.home.name, lang)}
+                    </span>
+                  </div>
+
+                  {/* Score / Center Info */}
+                  <div className="shrink-0 flex flex-col items-center justify-center min-w-[70px] text-center">
+                    {live || finished ? (
+                      <span className={`text-base font-black font-mono tracking-wider px-2 py-0.5 rounded bg-pitch-border/20 ${live ? 'text-rose-400' : 'text-white'}`}>
+                        {formatNumber(fixture.goals.home, lang)} - {formatNumber(fixture.goals.away, lang)}
                       </span>
-                    </div>
-                    {(live || finished) && (
-                      <span className={`text-base font-extrabold ${live ? 'text-rose-400' : 'text-white'}`}>
-                        {formatNumber(fixture.goals.home, lang)}
+                    ) : (
+                      <span className="text-xs font-bold text-stadium-gray font-mono">
+                        VS
                       </span>
                     )}
                   </div>
 
                   {/* Away Team */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-base shrink-0">{fixture.teams.away.flag}</span>
-                      <span className="text-xs md:text-sm font-semibold tracking-tight text-white line-clamp-1">
-                        {translateTeam(fixture.teams.away.name, lang)}
-                      </span>
-                    </div>
-                    {(live || finished) && (
-                      <span className={`text-base font-extrabold ${live ? 'text-rose-400' : 'text-white'}`}>
-                        {formatNumber(fixture.goals.away, lang)}
-                      </span>
-                    )}
+                  <div className="flex items-center gap-2 flex-1 min-w-0 justify-end text-end">
+                    <span className="text-xs md:text-sm font-semibold tracking-tight text-white truncate">
+                      {translateTeam(fixture.teams.away.name, lang)}
+                    </span>
+                    <span className="text-base shrink-0">{fixture.teams.away.flag}</span>
                   </div>
                 </div>
 

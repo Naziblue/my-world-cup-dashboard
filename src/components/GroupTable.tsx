@@ -232,61 +232,58 @@ export default function GroupTable({ group, searchQuery, fixtures, lang }: Group
                   return (
                     <div 
                       key={fix.id}
-                      className="bg-rose-950/10 border border-rose-500/10 rounded-xl p-2 flex items-center justify-between gap-2 hover:bg-rose-950/25 transition-colors"
+                      className="bg-rose-950/10 border border-rose-500/10 rounded-xl p-2 flex items-center justify-between gap-1 hover:bg-rose-950/25 transition-colors text-xs font-semibold text-rose-100"
                     >
-                      {/* Teams column */}
-                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                        {/* Home team */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs shrink-0">{fix.teams.home.flag}</span>
-                          <span className={`text-[11px] font-bold truncate text-rose-100 ${
-                            searchQuery && fix.teams.home.name.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-volt-yellow font-black' : ''
-                          }`}>
-                            {translateTeam(fix.teams.home.name, lang)}
-                          </span>
-                        </div>
-                        {/* Away team */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs shrink-0">{fix.teams.away.flag}</span>
-                          <span className={`text-[11px] font-bold truncate text-rose-100 ${
-                            searchQuery && fix.teams.away.name.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-volt-yellow font-black' : ''
-                          }`}>
-                            {translateTeam(fix.teams.away.name, lang)}
-                          </span>
-                        </div>
+                      {/* Home Team */}
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-start text-start">
+                        <span className="text-xs shrink-0">{fix.teams.home.flag}</span>
+                        <span className={`text-[10px] font-bold truncate ${
+                          searchQuery && fix.teams.home.name.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-volt-yellow font-black' : ''
+                        }`}>
+                          {translateTeam(fix.teams.home.name, lang)}
+                        </span>
                       </div>
 
-                      {/* Score / Time Badge */}
-                      <div className="shrink-0 flex flex-col items-end justify-center min-w-[75px] text-end">
+                      {/* Score / Center Info */}
+                      <div className="shrink-0 flex flex-col items-center justify-center min-w-[60px] text-center px-1">
                         {isLive ? (
-                          <div className="flex flex-col items-end">
-                            <span className="text-[11px] font-black text-rose-400 font-mono">
+                          <div className="flex flex-col items-center">
+                            <span className="text-[10px] font-black text-rose-400 font-mono bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/20">
                               {formatNumber(fix.goals.home, lang)} - {formatNumber(fix.goals.away, lang)}
                             </span>
-                            <span className="text-[8px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-1 rounded font-black tracking-widest animate-pulse mt-0.5">
+                            <span className="text-[7px] text-rose-400 font-bold animate-pulse mt-0.5 uppercase tracking-wide">
                               {fix.status.short === 'HT' ? t('HT', lang) : formatNumber(fix.status.elapsed, lang) + '\''}
                             </span>
                           </div>
                         ) : isFinished ? (
-                          <div className="flex flex-col items-end">
-                            <span className="text-[11px] font-bold text-slate-100 font-mono">
+                          <div className="flex flex-col items-center">
+                            <span className="text-[10px] font-bold text-slate-100 font-mono bg-pitch-border/30 px-1.5 py-0.5 rounded">
                               {formatNumber(fix.goals.home, lang)} - {formatNumber(fix.goals.away, lang)}
                             </span>
-                            <span className="text-[8px] text-rose-300/40 font-bold mt-0.5">
+                            <span className="text-[7px] text-rose-300/40 font-bold mt-0.5 uppercase">
                               {t('FINAL', lang)}
                             </span>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-end">
-                            <span className="text-[10px] font-bold text-neon-teal font-mono truncate max-w-[70px]">
-                              {/* Strip timezone from time string to fit in box */}
+                          <div className="flex flex-col items-center">
+                            <span className="text-[9px] font-bold text-neon-teal font-mono">
                               {formattedTime.replace(' ' + formattedTime.split(' ').pop(), '')}
                             </span>
-                            <span className="text-[8px] text-rose-300/50 font-semibold mt-0.5">
+                            <span className="text-[7px] text-rose-300/50 font-semibold mt-0.5">
                               {formattedDate}
                             </span>
                           </div>
                         )}
+                      </div>
+
+                      {/* Away Team */}
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end text-end">
+                        <span className={`text-[10px] font-bold truncate ${
+                          searchQuery && fix.teams.away.name.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-volt-yellow font-black' : ''
+                        }`}>
+                          {translateTeam(fix.teams.away.name, lang)}
+                        </span>
+                        <span className="text-xs shrink-0">{fix.teams.away.flag}</span>
                       </div>
                     </div>
                   );
