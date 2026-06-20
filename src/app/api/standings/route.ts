@@ -506,6 +506,74 @@ export async function GET(request: Request) {
       fixtures = mockWorldCupFixtures;
     }
 
+    // Dynamic standings adjustment based on live or recently-finished matches
+    if (groups.length > 0 && fixtures.length > 0) {
+      groups.forEach((group) => {
+        group.teams.forEach((team) => {
+          const teamNameLower = team.name.toLowerCase().trim();
+          
+          // Get all matches for this team that have started (live or finished)
+          const teamFixtures = fixtures.filter(f => {
+            const homeName = f.teams.home.name.toLowerCase().trim();
+            const awayName = f.teams.away.name.toLowerCase().trim();
+            const isHome = homeName === teamNameLower;
+            const isAway = awayName === teamNameLower;
+            const isLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(f.status.short);
+            const isFinished = f.status.short === 'FT';
+            return (isHome || isAway) && (isLive || isFinished);
+          });
+
+          // Sort chronologically
+          teamFixtures.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+          const standingsPlayed = team.played;
+
+          // Apply adjustment for any match at index i >= standingsPlayed
+          for (let i = standingsPlayed; i < teamFixtures.length; i++) {
+            const fix = teamFixtures[i];
+            const isHome = fix.teams.home.name.toLowerCase().trim() === teamNameLower;
+            
+            const gHome = fix.goals.home ?? 0;
+            const gAway = fix.goals.away ?? 0;
+
+            team.played += 1;
+            if (isHome) {
+              team.goalsFor += gHome;
+              team.goalsAgainst += gAway;
+              if (gHome > gAway) {
+                team.won += 1;
+                team.points += 3;
+              } else if (gHome < gAway) {
+                team.lost += 1;
+              } else {
+                team.drawn += 1;
+                team.points += 1;
+              }
+            } else {
+              team.goalsFor += gAway;
+              team.goalsAgainst += gHome;
+              if (gAway > gHome) {
+                team.won += 1;
+                team.points += 3;
+              } else if (gAway < gHome) {
+                team.lost += 1;
+              } else {
+                team.drawn += 1;
+                team.points += 1;
+              }
+            }
+            team.goalDifference = team.goalsFor - team.goalsAgainst;
+          }
+        });
+
+        // Re-sort the group's teams array according to 2026 World Cup rules:
+        // 1. Points (descending)
+        // 2. Goal Difference (descending)
+        // 3. Goals Scored (descending)
+        group.teams.sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
+      });
+    }
+
     const responsePayload = {
       success: true,
       lastUpdated: new Date().toISOString(),
