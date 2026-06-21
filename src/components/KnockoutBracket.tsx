@@ -78,12 +78,12 @@ const TeamCard: React.FC<{
         flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer
         transition-all duration-200 select-none min-w-0
         ${isWinner
-          ? 'bg-electric-purple/25 border border-cyber-orchid/50 shadow-[0_0_8px_rgba(157,78,221,0.3)]'
+          ? 'bg-magenta/20 border border-magenta/70 shadow-[0_0_10px_rgba(255,0,184,0.35)]'
           : isHighlighted
-            ? 'bg-neon-teal/10 border border-neon-teal/30'
+            ? 'bg-magenta/10 border border-magenta/40'
             : isTbd
-              ? 'bg-deep-navy/40 border border-pitch-border/30 opacity-50'
-              : 'bg-deep-navy/60 border border-pitch-border/50 hover:border-cyber-orchid/40 hover:bg-electric-purple/10'
+              ? 'bg-deep-navy/40 border border-magenta/15 opacity-50'
+              : 'bg-deep-navy/60 border border-magenta/30 hover:border-magenta/60 hover:bg-magenta/8'
         }
       `}
       whileHover={!isTbd ? { scale: 1.03 } : {}}
@@ -96,7 +96,7 @@ const TeamCard: React.FC<{
       <span className="text-sm leading-none shrink-0">{isTbd ? '🏳️' : team.flag}</span>
       <div className="flex flex-col min-w-0">
         <span className={`text-[10px] font-bold truncate leading-tight ${
-          isWinner ? 'text-cyber-orchid' : isTbd ? 'text-stadium-gray/50' : 'text-white'
+          isWinner ? 'text-magenta' : isTbd ? 'text-stadium-gray/50' : 'text-white'
         }`}>
           {isTbd
             ? (lang === 'fa' ? t('TBD', lang) : label.replace('Winner Group ', '1').replace('Runner-up Group ', '2').split('/')[0])
@@ -109,7 +109,7 @@ const TeamCard: React.FC<{
       </div>
       {isWinner && (
         <div className="ml-auto shrink-0">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyber-orchid animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-magenta animate-pulse" />
         </div>
       )}
     </motion.div>
@@ -130,9 +130,9 @@ const MatchCard: React.FC<{
   const cardWidth = size === 'sm' ? 'w-[130px]' : size === 'lg' ? 'w-[170px]' : 'w-[148px]';
 
   return (
-    <div className={`${cardWidth} flex flex-col gap-0.5 rounded-xl overflow-hidden border border-pitch-border/70 bg-stadium-indigo shadow-lg`}>
+    <div className={`${cardWidth} flex flex-col gap-0.5 rounded-xl overflow-hidden border border-magenta/40 bg-stadium-indigo shadow-lg shadow-magenta/5`} style={{boxShadow:'0 0 12px rgba(255,0,184,0.08)'}}>
       {/* Match label */}
-      <div className="text-[8px] text-stadium-gray/50 uppercase tracking-wider font-bold text-center py-1 border-b border-pitch-border/40">
+      <div className="text-[8px] text-magenta/50 uppercase tracking-wider font-bold text-center py-1 border-b border-magenta/20">
         M{match.id.replace('r16-', '').replace('qf-', '').replace('sf-', '').replace('final-', '')}
       </div>
 
@@ -153,9 +153,9 @@ const MatchCard: React.FC<{
 
       {/* VS divider */}
       <div className="flex items-center gap-1 px-2">
-        <div className="flex-1 h-px bg-pitch-border/50" />
-        <span className="text-[8px] font-bold text-stadium-gray/40 uppercase">vs</span>
-        <div className="flex-1 h-px bg-pitch-border/50" />
+        <div className="flex-1 h-px bg-magenta/25" />
+        <span className="text-[8px] font-bold text-magenta/40 uppercase">vs</span>
+        <div className="flex-1 h-px bg-magenta/25" />
       </div>
 
       {/* Away team */}
@@ -189,7 +189,7 @@ const BracketColumn: React.FC<{
 }> = ({ label, matches, highlightedTeam, onSelectWinner, onHoverTeam, lang, cardSize = 'md', matchSpacing = 'gap-4' }) => (
   <div className="flex flex-col items-center shrink-0">
     {/* Round header */}
-    <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest mb-3 whitespace-nowrap px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50">
+    <div className="text-[10px] font-bold text-magenta/80 uppercase tracking-widest mb-3 whitespace-nowrap px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5">
       {label}
     </div>
     <div className={`flex flex-col ${matchSpacing} items-center justify-around flex-1`}>
@@ -217,8 +217,8 @@ const Connector: React.FC<{ count: number; side: 'left' | 'right' }> = ({ count,
       {lines.map((_, i) => (
         <div key={i} className="flex-1 flex items-center">
           <div
-            className="w-full h-px bg-pitch-border/40"
-            style={{ boxShadow: '0 0 4px rgba(157,78,221,0.15)' }}
+            className="w-full h-px bg-magenta/30"
+            style={{ boxShadow: '0 0 4px rgba(255,0,184,0.2)' }}
           />
         </div>
       ))}
@@ -445,7 +445,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
       transition={{ duration: 0.3 }}
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stadium-indigo border border-pitch-border p-5 rounded-3xl shadow-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stadium-indigo border border-magenta/40 p-5 rounded-3xl shadow-2xl" style={{boxShadow:'0 0 20px rgba(255,0,184,0.08)'}}>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Trophy size={18} className="text-volt-yellow" />
@@ -459,13 +459,13 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
         </div>
         <div className="flex gap-2 shrink-0">
           {/* Scroll nav buttons */}
-          <button onClick={() => scrollTo('left')} className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-deep-navy border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer">
+          <button onClick={() => scrollTo('left')} className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-deep-navy border border-magenta/40 text-magenta/80 hover:text-white hover:border-magenta hover:bg-magenta/10 transition-colors cursor-pointer">
             <ChevronLeft size={12} />{t('Left', lang)}
           </button>
-          <button onClick={() => scrollTo('center')} className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-deep-navy border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer">
+          <button onClick={() => scrollTo('center')} className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-deep-navy border border-magenta/40 text-magenta/80 hover:text-white hover:border-magenta hover:bg-magenta/10 transition-colors cursor-pointer">
             {t('Center', lang)}
           </button>
-          <button onClick={() => scrollTo('right')} className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-deep-navy border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer">
+          <button onClick={() => scrollTo('right')} className="inline-flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-deep-navy border border-magenta/40 text-magenta/80 hover:text-white hover:border-magenta hover:bg-magenta/10 transition-colors cursor-pointer">
             {t('Right', lang)}<ChevronRight size={12} />
           </button>
           {hasPredictions && (
@@ -509,7 +509,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
       </AnimatePresence>
 
       {/* Bracket scroll area */}
-      <div className="bg-stadium-indigo border border-pitch-border rounded-3xl p-4 shadow-2xl overflow-hidden">
+      <div className="bg-stadium-indigo border border-magenta/40 rounded-3xl p-4 shadow-2xl overflow-hidden" style={{boxShadow:'0 0 30px rgba(255,0,184,0.07)'}}>
         <div
           ref={scrollRef}
           className="overflow-x-auto pb-4"
@@ -522,7 +522,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
 
             {/* R32 Left */}
             <div className="flex flex-col gap-3 justify-around shrink-0">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('r32')}
               </div>
               <div className="flex flex-col gap-3">
@@ -544,15 +544,15 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             <div className="flex flex-col gap-3 justify-around shrink-0 w-5 mt-8">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex-1 flex flex-col justify-around">
-                  <div className="h-px bg-pitch-border/40 w-full" />
-                  <div className="h-px bg-pitch-border/40 w-full" />
+                  <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
+                  <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
                 </div>
               ))}
             </div>
 
             {/* R16 Left */}
             <div className="flex flex-col gap-6 justify-around shrink-0 mt-8">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('r16')}
               </div>
               <div className="flex flex-col gap-6">
@@ -574,15 +574,15 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             <div className="flex flex-col gap-6 justify-around shrink-0 w-5 mt-12">
               {Array.from({ length: 2 }).map((_, i) => (
                 <div key={i} className="flex-1 flex flex-col justify-around">
-                  <div className="h-px bg-pitch-border/40 w-full" />
-                  <div className="h-px bg-pitch-border/40 w-full" />
+                  <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
+                  <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
                 </div>
               ))}
             </div>
 
             {/* QF Left */}
             <div className="flex flex-col gap-16 justify-around shrink-0 mt-16">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('qf')}
               </div>
               <div className="flex flex-col gap-16">
@@ -603,14 +603,14 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* Connector QF→SF left */}
             <div className="flex flex-col justify-around shrink-0 w-5 mt-20">
               <div className="flex-1 flex flex-col justify-around">
-                <div className="h-px bg-pitch-border/40 w-full" />
-                <div className="h-px bg-pitch-border/40 w-full" />
+                <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
+                <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
               </div>
             </div>
 
             {/* SF Left */}
             <div className="flex flex-col justify-around shrink-0 mt-32">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('sf')}
               </div>
               <div className="flex flex-col justify-center flex-1">
@@ -630,7 +630,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
 
             {/* Connector SF→Final left */}
             <div className="flex items-center shrink-0 w-5 mt-40">
-              <div className="h-px bg-pitch-border/40 w-full" />
+              <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
             </div>
 
             {/* === CENTER: FINAL === */}
@@ -699,14 +699,14 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
 
             {/* Connector Final→SF right */}
             <div className="flex items-center shrink-0 w-5 mt-40">
-              <div className="h-px bg-pitch-border/40 w-full" />
+              <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
             </div>
 
             {/* === RIGHT SIDE: SF → QF → R16 → R32 (mirror) === */}
 
             {/* SF Right */}
             <div className="flex flex-col justify-around shrink-0 mt-32">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('sf')}
               </div>
               <div className="flex flex-col justify-center flex-1">
@@ -726,12 +726,12 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
 
             {/* Connector SF←QF right */}
             <div className="flex items-center shrink-0 w-5 mt-40">
-              <div className="h-px bg-pitch-border/40 w-full" />
+              <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
             </div>
 
             {/* QF Right */}
             <div className="flex flex-col gap-16 justify-around shrink-0 mt-16">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('qf')}
               </div>
               <div className="flex flex-col gap-16">
@@ -752,14 +752,14 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* Connector QF←R16 right */}
             <div className="flex flex-col justify-around shrink-0 w-5 mt-20">
               <div className="flex-1 flex flex-col justify-around">
-                <div className="h-px bg-pitch-border/40 w-full" />
-                <div className="h-px bg-pitch-border/40 w-full" />
+                <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
+                <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
               </div>
             </div>
 
             {/* R16 Right */}
             <div className="flex flex-col gap-6 justify-around shrink-0 mt-8">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('r16')}
               </div>
               <div className="flex flex-col gap-6">
@@ -781,15 +781,15 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             <div className="flex flex-col gap-6 justify-around shrink-0 w-5 mt-12">
               {Array.from({ length: 2 }).map((_, i) => (
                 <div key={i} className="flex-1 flex flex-col justify-around">
-                  <div className="h-px bg-pitch-border/40 w-full" />
-                  <div className="h-px bg-pitch-border/40 w-full" />
+                  <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
+                  <div className="h-px bg-magenta/30 w-full" style={{boxShadow:'0 0 4px rgba(255,0,184,0.2)'}} />
                 </div>
               ))}
             </div>
 
             {/* R32 Right */}
             <div className="flex flex-col gap-3 justify-around shrink-0">
-              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-pitch-border/40 bg-deep-navy/50 whitespace-nowrap self-center">
+              <div className="text-[10px] font-bold text-stadium-gray uppercase tracking-widest text-center mb-1 px-2 py-1 rounded-full border border-magenta/40 bg-magenta/5 whitespace-nowrap self-center">
                 {getRoundLabel('r32')}
               </div>
               <div className="flex flex-col gap-3">
@@ -819,15 +819,15 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 justify-center text-[10px] text-stadium-gray">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-electric-purple/25 border border-cyber-orchid/50" />
+          <div className="w-3 h-3 rounded bg-magenta/20 border border-magenta/70" />
           <span>{lang === 'en' ? 'Predicted winner' : 'برنده پیش‌بینی شده'}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-neon-teal/10 border border-neon-teal/30" />
+          <div className="w-3 h-3 rounded bg-magenta/10 border border-magenta/40" />
           <span>{lang === 'en' ? 'Highlighted team' : 'تیم هایلایت شده'}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-deep-navy/40 border border-pitch-border/30 opacity-50" />
+          <div className="w-3 h-3 rounded bg-deep-navy/40 border border-magenta/15 opacity-50" />
           <span>{lang === 'en' ? 'To be determined' : 'مشخص نشده'}</span>
         </div>
       </div>
