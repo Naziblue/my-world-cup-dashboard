@@ -179,36 +179,44 @@ function MatchCard({
 }) {
   const bothReady = match.home.code !== 'TBD' && match.away.code !== 'TBD';
 
-  const renderTeam = (team: Team) => {
+  const teamCls = (team: Team) => {
     const isTbd = team.code === 'TBD';
     const isWinner = bothReady && match.winner?.code === team.code;
     const isHL = highlighted === team.code && team.code !== 'TBD';
-    return (
-      <div
-        className={[
-          'flex items-center gap-0.5 flex-1 min-w-0 rounded px-0.5 py-px transition-all',
-          isWinner ? 'bg-magenta/20 border border-magenta/60' : '',
-          isHL && !isWinner ? 'bg-magenta/10 border border-magenta/30' : '',
-          !isWinner && !isHL ? 'border border-transparent hover:border-magenta/30 hover:bg-magenta/8' : '',
-          isTbd ? 'opacity-40 cursor-default' : 'cursor-pointer',
-        ].join(' ')}
-        onClick={isTbd ? undefined : () => bothReady && onSelect(match.id, team)}
-        onMouseEnter={() => !isTbd && onHover(team.code)}
-        onMouseLeave={() => onHover(null)}
-        title={isTbd ? undefined : `${lang === 'en' ? 'Click to predict' : 'کلیک'}: ${team.name}`}
-      >
-        <span className="text-[10px] leading-none shrink-0">
-          {isTbd ? '🏳️' : team.flag}
-        </span>
-        <span className={[
-          'truncate font-mono font-bold text-[8px] leading-none',
-          isWinner ? 'text-magenta' : isTbd ? 'text-stadium-gray/50' : 'text-white',
-        ].join(' ')}>
-          {isTbd ? '?' : team.code}
-        </span>
-        {isWinner && <span className="w-1 h-1 rounded-full bg-magenta animate-pulse shrink-0" />}
-      </div>
-    );
+    return [
+      'flex items-center gap-1 flex-1 min-w-0 rounded px-1 py-px transition-all',
+      isWinner ? 'bg-magenta/20 border border-magenta/60' : '',
+      isHL && !isWinner ? 'bg-magenta/10 border border-magenta/30' : '',
+      !isWinner && !isHL ? 'border border-transparent hover:border-magenta/30 hover:bg-magenta/8' : '',
+      isTbd ? 'opacity-40 cursor-default' : 'cursor-pointer',
+    ].join(' ');
+  };
+
+  const codeCls = (team: Team) => {
+    const isTbd = team.code === 'TBD';
+    const isWinner = bothReady && match.winner?.code === team.code;
+    return [
+      'truncate font-mono font-bold text-[9px] leading-none',
+      isWinner ? 'text-magenta' : isTbd ? 'text-stadium-gray/50' : 'text-white',
+    ].join(' ');
+  };
+
+  const handlers = (team: Team) => ({
+    onClick: team.code === 'TBD' ? undefined : () => bothReady && onSelect(match.id, team),
+    onMouseEnter: () => team.code !== 'TBD' && onHover(team.code),
+    onMouseLeave: () => onHover(null),
+    title: team.code === 'TBD' ? undefined : `${lang === 'en' ? 'Click to predict' : 'کلیک'}: ${team.name}`,
+  });
+
+  const flag = (team: Team) => (
+    <span className="text-[11px] leading-none shrink-0">
+      {team.code === 'TBD' ? '🏳️' : team.flag}
+    </span>
+  );
+
+  const dot = (team: Team) => {
+    const isWinner = bothReady && match.winner?.code === team.code;
+    return isWinner ? <span className="w-1.5 h-1.5 rounded-full bg-magenta animate-pulse shrink-0" /> : null;
   };
 
   return (
@@ -220,11 +228,21 @@ function MatchCard({
       <div className="text-center border-b border-magenta/20 text-magenta/50 font-mono font-bold text-[7px] py-px truncate px-0.5">
         {headerLabel ?? `M${match.id}`}
       </div>
-      {/* ── Single-row team layout ── */}
-      <div className="flex-1 flex flex-row items-center gap-1 px-1">
-        {renderTeam(match.home)}
-        <span className="text-[6px] text-magenta/40 font-bold shrink-0">vs</span>
-        {renderTeam(match.away)}
+      {/* ── Single-row: 🏴 CODE   vs   CODE 🏴 ── */}
+      <div className="flex-1 flex flex-row items-center px-1">
+        {/* Home: flag on left edge → code */}
+        <div className={teamCls(match.home) + ' justify-start'} {...handlers(match.home)}>
+          {flag(match.home)}
+          <span className={codeCls(match.home)}>{match.home.code === 'TBD' ? '?' : match.home.code}</span>
+          {dot(match.home)}
+        </div>
+        <span className="text-[7px] text-magenta/40 font-bold shrink-0 mx-1">vs</span>
+        {/* Away: code → flag on right edge */}
+        <div className={teamCls(match.away) + ' justify-end'} {...handlers(match.away)}>
+          {dot(match.away)}
+          <span className={codeCls(match.away)}>{match.away.code === 'TBD' ? '?' : match.away.code}</span>
+          {flag(match.away)}
+        </div>
       </div>
     </div>
   );
