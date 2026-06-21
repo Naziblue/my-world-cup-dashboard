@@ -159,14 +159,14 @@ function TeamSlot({
 }
 
 // ─────────────────────────────────────────────────────────────────
-//  MatchCard
+//  MatchCard  –  horizontal single-line layout
+//  [ 🏴 ESP ]  vs  [ 🏴 AUT ]
 // ─────────────────────────────────────────────────────────────────
 function MatchCard({
   match,
   highlighted,
   onSelect,
   onHover,
-  compact,
   lang,
   headerLabel,
 }: {
@@ -174,47 +174,57 @@ function MatchCard({
   highlighted: string | null;
   onSelect: (id: string, team: Team) => void;
   onHover: (c: string | null) => void;
-  compact: boolean;
   lang: 'en' | 'fa';
   headerLabel?: string;
 }) {
   const bothReady = match.home.code !== 'TBD' && match.away.code !== 'TBD';
+
+  const renderTeam = (team: Team) => {
+    const isTbd = team.code === 'TBD';
+    const isWinner = bothReady && match.winner?.code === team.code;
+    const isHL = highlighted === team.code && team.code !== 'TBD';
+    return (
+      <div
+        className={[
+          'flex items-center gap-0.5 flex-1 min-w-0 rounded px-0.5 py-px transition-all',
+          isWinner ? 'bg-magenta/20 border border-magenta/60' : '',
+          isHL && !isWinner ? 'bg-magenta/10 border border-magenta/30' : '',
+          !isWinner && !isHL ? 'border border-transparent hover:border-magenta/30 hover:bg-magenta/8' : '',
+          isTbd ? 'opacity-40 cursor-default' : 'cursor-pointer',
+        ].join(' ')}
+        onClick={isTbd ? undefined : () => bothReady && onSelect(match.id, team)}
+        onMouseEnter={() => !isTbd && onHover(team.code)}
+        onMouseLeave={() => onHover(null)}
+        title={isTbd ? undefined : `${lang === 'en' ? 'Click to predict' : 'کلیک'}: ${team.name}`}
+      >
+        <span className="text-[10px] leading-none shrink-0">
+          {isTbd ? '🏳️' : team.flag}
+        </span>
+        <span className={[
+          'truncate font-mono font-bold text-[8px] leading-none',
+          isWinner ? 'text-magenta' : isTbd ? 'text-stadium-gray/50' : 'text-white',
+        ].join(' ')}>
+          {isTbd ? '?' : team.code}
+        </span>
+        {isWinner && <span className="w-1 h-1 rounded-full bg-magenta animate-pulse shrink-0" />}
+      </div>
+    );
+  };
 
   return (
     <div
       className="flex flex-col h-full rounded-lg overflow-hidden border border-magenta/40 bg-stadium-indigo select-none"
       style={{ boxShadow: '0 0 8px rgba(255,0,184,0.07)' }}
     >
-      <div
-        className={[
-          'text-center border-b border-magenta/20 text-magenta/50 font-mono font-bold truncate px-0.5',
-          compact ? 'text-[7px] py-px' : 'text-[8px] py-px',
-        ].join(' ')}
-      >
-        {headerLabel ?? (compact ? `M${match.id}` : `M${match.id}`)}
+      {/* Match ID header */}
+      <div className="text-center border-b border-magenta/20 text-magenta/50 font-mono font-bold text-[7px] py-px truncate px-0.5">
+        {headerLabel ?? `M${match.id}`}
       </div>
-      <div className="flex-1 flex flex-col justify-around px-0.5 py-px gap-px">
-        <TeamSlot
-          team={match.home}
-          isWinner={bothReady && match.winner?.code === match.home.code}
-          isHighlighted={highlighted === match.home.code && highlighted !== 'TBD'}
-          onClick={() => bothReady && onSelect(match.id, match.home)}
-          onHover={onHover}
-          compact={compact}
-          lang={lang}
-        />
-        <div className={['text-center text-magenta/35 font-bold', compact ? 'text-[6px]' : 'text-[7px]'].join(' ')}>
-          vs
-        </div>
-        <TeamSlot
-          team={match.away}
-          isWinner={bothReady && match.winner?.code === match.away.code}
-          isHighlighted={highlighted === match.away.code && highlighted !== 'TBD'}
-          onClick={() => bothReady && onSelect(match.id, match.away)}
-          onHover={onHover}
-          compact={compact}
-          lang={lang}
-        />
+      {/* ── Single-row team layout ── */}
+      <div className="flex-1 flex flex-row items-center gap-1 px-1">
+        {renderTeam(match.home)}
+        <span className="text-[6px] text-magenta/40 font-bold shrink-0">vs</span>
+        {renderTeam(match.away)}
       </div>
     </div>
   );
@@ -365,7 +375,6 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
               highlighted={highlighted}
               onSelect={handleSelect}
               onHover={setHighlighted}
-              compact
               lang={lang}
             />
           </div>
@@ -446,19 +455,19 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* ════ TOP HALF — converging toward Final ════ */}
 
             <RoundLabel label={getLbl('r32')} />
-            {gridRow(r32Top, 1, 60)}
+            {gridRow(r32Top, 1, 40)}
             <BracketConnector numPairs={4} direction="down" />
 
             <RoundLabel label={getLbl('r16')} />
-            {gridRow(r16Top, 2, 60)}
+            {gridRow(r16Top, 2, 40)}
             <BracketConnector numPairs={2} direction="down" />
 
             <RoundLabel label={getLbl('qf')} />
-            {gridRow(qfTop,  4, 60)}
+            {gridRow(qfTop,  4, 40)}
             <BracketConnector numPairs={1} direction="down" />
 
             <RoundLabel label={getLbl('sf')} />
-            {gridRow([sfTop], 8, 60)}
+            {gridRow([sfTop], 8, 40)}
 
             {/* SF → Final connector */}
             <VerticalCenterLine />
@@ -466,7 +475,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* ════ CENTER — Final ════ */}
             <RoundLabel label={getLbl('final')} gold />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: 'calc(100% / 8)', height: '60px' }}>
+              <div style={{ width: 'calc(100% / 8)', height: '40px' }}>
                 <div
                   className="flex flex-col h-full rounded-lg overflow-hidden"
                   style={{
@@ -478,7 +487,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
                   <div className="text-center border-b border-magenta/30 text-magenta/70 font-black text-[7px] py-px uppercase tracking-wider">
                     {lang === 'en' ? '🏆 Final' : '🏆 فینال'}
                   </div>
-                  <div className="flex-1 flex flex-col justify-around px-0.5 py-px gap-px">
+                  <div className="flex-1 flex flex-row items-center gap-1 px-1">
                     <TeamSlot
                       team={finalMatch.home}
                       isWinner={finalMatch.home.code !== 'TBD' && finalMatch.away.code !== 'TBD' && finalMatch.winner?.code === finalMatch.home.code}
@@ -488,7 +497,7 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
                       compact
                       lang={lang}
                     />
-                    <div className="text-[6px] text-magenta/35 font-bold text-center">vs</div>
+                    <span className="text-[6px] text-magenta/40 font-bold shrink-0">vs</span>
                     <TeamSlot
                       team={finalMatch.away}
                       isWinner={finalMatch.home.code !== 'TBD' && finalMatch.away.code !== 'TBD' && finalMatch.winner?.code === finalMatch.away.code}
@@ -509,19 +518,19 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* ════ BOTTOM HALF — expanding from Final ════ */}
 
             <RoundLabel label={getLbl('sf')} />
-            {gridRow([sfBot], 8, 60)}
+            {gridRow([sfBot], 8, 40)}
             <BracketConnector numPairs={1} direction="up" />
 
             <RoundLabel label={getLbl('qf')} />
-            {gridRow(qfBot,  4, 60)}
+            {gridRow(qfBot,  4, 40)}
             <BracketConnector numPairs={2} direction="up" />
 
             <RoundLabel label={getLbl('r16')} />
-            {gridRow(r16Bot, 2, 60)}
+            {gridRow(r16Bot, 2, 40)}
             <BracketConnector numPairs={4} direction="up" />
 
             <RoundLabel label={getLbl('r32')} />
-            {gridRow(r32Bot, 1, 60)}
+            {gridRow(r32Bot, 1, 40)}
 
           </div>
         </div>
