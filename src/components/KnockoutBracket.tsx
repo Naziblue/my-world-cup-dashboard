@@ -341,24 +341,34 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
   // Shared 8-col grid style
   const G8: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '3px' };
 
-  // Inline grid row renderer (avoids React nested-component pitfall)
+  // Inline grid row renderer – each card is centered at 1-col width regardless of colSpan
+  // so all boxes look identical in size (same as R32 compact cards).
   const gridRow = (
     matches: RoundMatch[],
     colSpan: number,
-    compact: boolean,
     heightPx: number
   ) => (
     <div style={{ ...G8, height: `${heightPx}px` }}>
       {matches.map((match, i) => (
-        <div key={match.id} style={{ gridColumn: `${i * colSpan + 1} / span ${colSpan}` }}>
-          <MatchCard
-            match={match}
-            highlighted={highlighted}
-            onSelect={handleSelect}
-            onHover={setHighlighted}
-            compact={compact}
-            lang={lang}
-          />
+        <div
+          key={match.id}
+          style={{
+            gridColumn: `${i * colSpan + 1} / span ${colSpan}`,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          {/* width = 1/colSpan of parent → same pixel width as one R32 card */}
+          <div style={{ width: `${100 / colSpan}%` }}>
+            <MatchCard
+              match={match}
+              highlighted={highlighted}
+              onSelect={handleSelect}
+              onHover={setHighlighted}
+              compact
+              lang={lang}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -436,19 +446,19 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* ════ TOP HALF — converging toward Final ════ */}
 
             <RoundLabel label={getLbl('r32')} />
-            {gridRow(r32Top, 1, true,  60)}
+            {gridRow(r32Top, 1, 60)}
             <BracketConnector numPairs={4} direction="down" />
 
             <RoundLabel label={getLbl('r16')} />
-            {gridRow(r16Top, 2, false, 65)}
+            {gridRow(r16Top, 2, 60)}
             <BracketConnector numPairs={2} direction="down" />
 
             <RoundLabel label={getLbl('qf')} />
-            {gridRow(qfTop,  4, false, 68)}
+            {gridRow(qfTop,  4, 60)}
             <BracketConnector numPairs={1} direction="down" />
 
             <RoundLabel label={getLbl('sf')} />
-            {gridRow([sfTop], 8, false, 72)}
+            {gridRow([sfTop], 8, 60)}
 
             {/* SF → Final connector */}
             <VerticalCenterLine />
@@ -456,36 +466,36 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* ════ CENTER — Final ════ */}
             <RoundLabel label={getLbl('final')} gold />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: '42%', height: '84px' }}>
+              <div style={{ width: 'calc(100% / 8)', height: '60px' }}>
                 <div
-                  className="flex flex-col h-full rounded-xl overflow-hidden"
+                  className="flex flex-col h-full rounded-lg overflow-hidden"
                   style={{
                     border: '2px solid rgba(255,0,184,0.65)',
                     background: 'var(--color-stadium-indigo)',
-                    boxShadow: '0 0 32px rgba(255,0,184,0.22), 0 0 64px rgba(204,255,0,0.05)',
+                    boxShadow: '0 0 24px rgba(255,0,184,0.25), 0 0 48px rgba(204,255,0,0.05)',
                   }}
                 >
-                  <div className="text-center border-b border-magenta/30 text-magenta/70 font-black text-[8px] py-0.5 uppercase tracking-wider">
-                    {lang === 'en' ? '🏆 Grand Final' : '🏆 فینال بزرگ'}
+                  <div className="text-center border-b border-magenta/30 text-magenta/70 font-black text-[7px] py-px uppercase tracking-wider">
+                    {lang === 'en' ? '🏆 Final' : '🏆 فینال'}
                   </div>
-                  <div className="flex-1 flex flex-col justify-around px-1 py-px gap-px">
+                  <div className="flex-1 flex flex-col justify-around px-0.5 py-px gap-px">
                     <TeamSlot
                       team={finalMatch.home}
                       isWinner={finalMatch.home.code !== 'TBD' && finalMatch.away.code !== 'TBD' && finalMatch.winner?.code === finalMatch.home.code}
                       isHighlighted={highlighted === finalMatch.home.code && highlighted !== 'TBD'}
                       onClick={() => finalMatch.home.code !== 'TBD' && finalMatch.away.code !== 'TBD' && handleSelect('final', finalMatch.home)}
                       onHover={setHighlighted}
-                      compact={false}
+                      compact
                       lang={lang}
                     />
-                    <div className="text-[7px] text-magenta/35 font-bold text-center">vs</div>
+                    <div className="text-[6px] text-magenta/35 font-bold text-center">vs</div>
                     <TeamSlot
                       team={finalMatch.away}
                       isWinner={finalMatch.home.code !== 'TBD' && finalMatch.away.code !== 'TBD' && finalMatch.winner?.code === finalMatch.away.code}
                       isHighlighted={highlighted === finalMatch.away.code && highlighted !== 'TBD'}
                       onClick={() => finalMatch.home.code !== 'TBD' && finalMatch.away.code !== 'TBD' && handleSelect('final', finalMatch.away)}
                       onHover={setHighlighted}
-                      compact={false}
+                      compact
                       lang={lang}
                     />
                   </div>
@@ -499,19 +509,19 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
             {/* ════ BOTTOM HALF — expanding from Final ════ */}
 
             <RoundLabel label={getLbl('sf')} />
-            {gridRow([sfBot], 8, false, 72)}
+            {gridRow([sfBot], 8, 60)}
             <BracketConnector numPairs={1} direction="up" />
 
             <RoundLabel label={getLbl('qf')} />
-            {gridRow(qfBot,  4, false, 68)}
+            {gridRow(qfBot,  4, 60)}
             <BracketConnector numPairs={2} direction="up" />
 
             <RoundLabel label={getLbl('r16')} />
-            {gridRow(r16Bot, 2, false, 65)}
+            {gridRow(r16Bot, 2, 60)}
             <BracketConnector numPairs={4} direction="up" />
 
             <RoundLabel label={getLbl('r32')} />
-            {gridRow(r32Bot, 1, true,  60)}
+            {gridRow(r32Bot, 1, 60)}
 
           </div>
         </div>
