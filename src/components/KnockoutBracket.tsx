@@ -221,11 +221,11 @@ function MatchCard({
 
   return (
     <div
-      className="flex flex-col h-full rounded-lg overflow-hidden border border-magenta/40 bg-stadium-indigo select-none"
-      style={{ boxShadow: '0 0 8px rgba(255,0,184,0.07)' }}
+      className="flex flex-col h-full rounded-lg overflow-hidden border border-white/30 bg-stadium-indigo select-none"
+      style={{ boxShadow: '0 0 8px rgba(255,255,255,0.04)' }}
     >
       {/* Match ID header */}
-      <div className="text-center border-b border-magenta/20 text-magenta/50 font-mono font-bold text-[7px] py-px truncate px-0.5">
+      <div className="text-center border-b border-white/15 text-white/50 font-mono font-bold text-[7px] py-px truncate px-0.5">
         {headerLabel ?? `M${match.id}`}
       </div>
       {/* ── Single-row: 🏴 CODE   vs   CODE 🏴 ── */}
@@ -497,12 +497,12 @@ export default function KnockoutBracket({ groups, lang }: KnockoutBracketProps) 
                 <div
                   className="flex flex-col h-full rounded-lg overflow-hidden"
                   style={{
-                    border: '2px solid rgba(255,0,184,0.65)',
+                    border: '2px solid rgba(255,255,255,0.5)',
                     background: 'var(--color-stadium-indigo)',
-                    boxShadow: '0 0 24px rgba(255,0,184,0.25), 0 0 48px rgba(204,255,0,0.05)',
+                    boxShadow: '0 0 24px rgba(255,255,255,0.08), 0 0 48px rgba(204,255,0,0.05)',
                   }}
                 >
-                  <div className="text-center border-b border-magenta/30 text-magenta/70 font-black text-[7px] py-px uppercase tracking-wider">
+                  <div className="text-center border-b border-white/25 text-white/70 font-black text-[7px] py-px uppercase tracking-wider">
                     {lang === 'en' ? '🏆 Final' : '🏆 فینال'}
                   </div>
                   <div className="flex-1 flex flex-row items-center gap-1 px-1">
