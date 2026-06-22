@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star } from 'lucide-react';
-import { Team, Group, Fixture } from '@/types';
+import { Team, Group, Fixture, SquadPlayer, Coach } from '@/types';
 import { t, translateTeam, formatNumber } from '@/utils/i18n';
 
 interface TeamDetailDrawerProps {
@@ -21,8 +21,32 @@ function isLang(en: string, lang: 'en' | 'fa') {
   return lang === 'fa' ? (map[en] ?? en) : en;
 }
 
+const POS_ORDER: Record<string, number> = { Goalkeeper: 0, Defender: 1, Midfielder: 2, Attacker: 3 };
+const POS_LABEL: Record<string, string> = { Goalkeeper: 'GK', Defender: 'DEF', Midfielder: 'MID', Attacker: 'FWD' };
+const POS_LABEL_FA: Record<string, string> = { Goalkeeper: 'دروازه‌بان', Defender: 'مدافع', Midfielder: 'هافبک', Attacker: 'مهاجم' };
+
 export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned, onTogglePin, onClose }: TeamDetailDrawerProps) {
-  // Form guide derived from real fixture data
+  const [players, setPlayers] = useState<SquadPlayer[]>([]);
+  const [coach, setCoach] = useState<Coach | null>(null);
+  const [squadLoading, setSquadLoading] = useState(false);
+
+  useEffect(() => {
+    if (!team?.apiId) {
+      setPlayers([]);
+      setCoach(null);
+      return;
+    }
+    setSquadLoading(true);
+    fetch(`/api/team-squad?id=${team.apiId}`)
+      .then(r => r.json())
+      .then(data => {
+        setPlayers(data.players ?? []);
+        setCoach(data.coach ?? null);
+      })
+      .catch(() => {})
+      .finally(() => setSquadLoading(false));
+  }, [team?.apiId]);
+
   const formGuide = useMemo(() => {
     if (!team) return [];
     const teamName = team.name.toLowerCase();
@@ -44,7 +68,6 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
       });
   }, [team, fixtures]);
 
-  // Match history list
   const matchHistory = useMemo(() => {
     if (!team) return [];
     const teamName = team.name.toLowerCase();
@@ -56,6 +79,17 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [team, fixtures]);
+
+  const groupedPlayers = useMemo(() => {
+    const groups: Record<string, SquadPlayer[]> = {};
+    for (const p of players) {
+      const pos = p.position || 'Unknown';
+      if (!groups[pos]) groups[pos] = [];
+      groups[pos].push(p);
+    }
+    return Object.entries(groups)
+      .sort(([a], [b]) => (POS_ORDER[a] ?? 99) - (POS_ORDER[b] ?? 99));
+  }, [players]);
 
   const groupRank = group && team ? group.teams.findIndex(t => t.code === team.code) + 1 : 0;
 
@@ -122,6 +156,19 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
                 </div>
               </div>
 
+              {/* Coach */}
+              {coach && (
+                <div className="flex items-center gap-3 mb-6 bg-stadium-indigo/50 border border-pitch-border/40 rounded-xl px-4 py-3">
+                  {coach.photo && (
+                    <img src={coach.photo} alt={coach.name} className="w-10 h-10 rounded-full object-cover border border-pitch-border/50" />
+                  )}
+                  <div>
+                    <div className="text-xs font-bold text-white">{coach.name}</div>
+                    <div className="text-[10px] text-stadium-gray">{lang === 'fa' ? 'سرمربی' : 'Head Coach'} · {coach.nationality}</div>
+                  </div>
+                </div>
+              )}
+
               {/* Stats summary */}
               <div className="grid grid-cols-4 gap-2 mb-6">
                 {[
@@ -137,7 +184,7 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
                 ))}
               </div>
 
-              {/* Extended stats row */}
+              {/* Extended stats */}
               <div className="grid grid-cols-3 gap-2 mb-6">
                 {[
                   { label: isLang('GF', lang), value: team.goalsFor },
@@ -180,7 +227,7 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
 
               {/* Match history */}
               {matchHistory.length > 0 && (
-                <div>
+                <div className="mb-6">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-stadium-gray mb-3">{t('Match History', lang)}</h3>
                   <div className="space-y-2">
                     {matchHistory.map((fix) => {
@@ -209,6 +256,50 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
                   </div>
                 </div>
               )}
+
+              {/* Squad */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-stadium-gray mb-3">
+                  {lang === 'fa' ? 'ترکیب تیم' : 'Squad'}
+                </h3>
+
+                {squadLoading && (
+                  <div className="flex justify-center py-6">
+                    <div className="w-6 h-6 border-2 border-pitch-border/30 border-t-electric-purple rounded-full animate-spin" />
+                  </div>
+                )}
+
+                {!squadLoading && groupedPlayers.length === 0 && (
+                  <div className="text-xs text-stadium-gray/50 text-center py-4 bg-stadium-indigo/30 rounded-xl border border-pitch-border/30">
+                    {t('Squad data not available', lang)}
+                  </div>
+                )}
+
+                {!squadLoading && groupedPlayers.length > 0 && (
+                  <div className="space-y-3">
+                    {groupedPlayers.map(([position, posPlayers]) => (
+                      <div key={position}>
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-cyber-orchid/60 mb-1.5 border-b border-pitch-border/20 pb-1">
+                          {lang === 'fa' ? (POS_LABEL_FA[position] ?? position) : (POS_LABEL[position] ?? position)}
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                          {posPlayers.map((p, i) => (
+                            <div key={i} className="flex items-center gap-2 py-0.5">
+                              {p.number != null && (
+                                <span className="text-[9px] font-mono font-bold text-stadium-gray/50 w-4 text-right">{p.number}</span>
+                              )}
+                              <span className="text-[11px] text-white truncate">{p.name}</span>
+                              {p.age != null && (
+                                <span className="text-[9px] text-stadium-gray/40 ml-auto shrink-0">{p.age}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         </>

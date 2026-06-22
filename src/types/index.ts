@@ -10,6 +10,26 @@ export interface Team {
   goalDifference: number;
   points: number;
   flag: string;
+  apiId?: number;
+}
+
+export interface SquadPlayer {
+  name: string;
+  age: number | null;
+  number: number | null;
+  position: string;
+  photo: string;
+}
+
+export interface Coach {
+  name: string;
+  photo: string;
+  nationality: string;
+}
+
+export interface TeamSquadData {
+  coach: Coach | null;
+  players: SquadPlayer[];
 }
 
 export interface Group {

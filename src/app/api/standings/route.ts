@@ -458,7 +458,8 @@ export async function GET(request: Request) {
               goalsAgainst: item.all.goals.against,
               goalDifference: item.goalsDiff,
               points: item.points,
-              flag: metadata.flag
+              flag: metadata.flag,
+              apiId: item.team.id
             };
           });
 
