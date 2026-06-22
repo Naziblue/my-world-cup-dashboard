@@ -380,7 +380,7 @@ let cachedResponse: {
   timestamp: number;
   data: any;
 } | null = null;
-const CACHE_TTL_MS = 15000; // 15 seconds
+const CACHE_TTL_MS = 30000; // 30 seconds — most 7s client polls hit this cache
 
 export async function GET(request: Request) {
   try {
@@ -525,36 +525,31 @@ export async function GET(request: Request) {
       fixtures = mockWorldCupFixtures;
     }
 
-    // Pre-fetch events for all started matches. Uses persistent cache for FT matches.
+    // Pre-fetch events: live matches always, FT matches from permanent cache, 1 uncached FT per cycle
     if (!isMockKey && fixtures.length > 0) {
       const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(s);
       const allStarted = fixtures.filter(f => f.status.short === 'FT' || isLive(f.status.short));
 
-      // Apply cached data for FT matches; live matches always re-fetch
-      const uncached: Fixture[] = [];
+      // Apply permanent cache for FT matches
+      const toFetch: Fixture[] = [];
       for (const fix of allStarted) {
         if (isLive(fix.status.short)) {
-          uncached.push(fix);
-          delete eventCache[fix.id]; // clear stale live data
+          toFetch.push(fix);
         } else if (eventCache[fix.id]) {
           const cached = eventCache[fix.id];
           if (cached.events.length > 0) fix.events = cached.events;
           if (cached.statistics.length > 0) fix.statistics = cached.statistics;
           if (cached.substitutions.length > 0) fix.substitutions = cached.substitutions;
         } else {
-          uncached.push(fix);
+          toFetch.push(fix);
         }
       }
 
-      // Fetch up to 5 uncached per request (most recent first). Builds up over auto-refreshes.
-      if (uncached.length > 0) {
-        uncached.sort((a, b) => {
-          const aLive = isLive(a.status.short) ? 0 : 1;
-          const bLive = isLive(b.status.short) ? 0 : 1;
-          if (aLive !== bLive) return aLive - bLive;
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        });
-        const batch = uncached.slice(0, 10);
+      // Only fetch live matches + 1 uncached FT match per cycle (saves API calls)
+      if (toFetch.length > 0) {
+        const liveOnes = toFetch.filter(f => isLive(f.status.short));
+        const ftOnes = toFetch.filter(f => !isLive(f.status.short));
+        const batch = [...liveOnes, ...ftOnes.slice(0, 1)];
         console.log(`[API]: Fetching events for ${batch.length}/${uncached.length} uncached matches (${Object.keys(eventCache).length} cached).`);
         {
           const results = await Promise.allSettled(
