@@ -60,7 +60,7 @@ export default function Home() {
     });
   }, []);
 
-  const LIVE_INTERVAL = 5;
+  const LIVE_INTERVAL = 7;
   const COOLDOWN_INTERVAL = 1800; // 30 minutes
 
   const fetchData = useCallback(async (isSilent = false) => {

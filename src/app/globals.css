@@ -50,3 +50,14 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-electric-purple);
 }
+
+@keyframes meshShift {
+  0%, 100% { background-position: 0% 50%; }
+  33% { background-position: 100% 30%; }
+  66% { background-position: 30% 80%; }
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 12px rgba(225,29,72,0.4); }
+  50% { box-shadow: 0 0 24px rgba(225,29,72,0.7), 0 0 48px rgba(225,29,72,0.2); }
+}

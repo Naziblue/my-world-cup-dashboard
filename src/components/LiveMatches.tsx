@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Fixture } from '@/types';
 import { Radio, Clock, ChevronDown } from 'lucide-react';
 import { t, translateTeam, formatNumber } from '@/utils/i18n';
+import { getFlagUrl, getNationalColors } from '@/utils/flags';
+import FlagCrest from '@/components/FlagCrest';
 
 interface LiveMatchesProps {
   fixtures: Fixture[];
@@ -209,97 +211,266 @@ function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 
   };
 
   const borderColor = live
-    ? 'border-rose-500/30'
+    ? 'border-rose-500/50'
     : finished
-    ? 'border-pitch-border/60'
+    ? 'border-pitch-border/30'
     : 'border-neon-teal/30';
 
   const shadowColor = live
-    ? '0 0 40px rgba(225,29,72,0.08)'
+    ? '0 0 30px rgba(225,29,72,0.2), 0 0 60px rgba(225,29,72,0.08)'
     : finished
-    ? '0 0 20px rgba(0,0,0,0.15)'
-    : '0 0 30px rgba(45,212,191,0.06)';
+    ? '0 0 10px rgba(0,0,0,0.2)'
+    : '0 0 25px rgba(0,245,212,0.08)';
 
-  const topBarBg = live
-    ? 'border-b border-rose-500/15 bg-rose-500/5'
-    : finished
-    ? 'border-b border-pitch-border/20 bg-pitch-border/5'
-    : 'border-b border-neon-teal/15 bg-neon-teal/5';
+  const homeFlagUrl = getFlagUrl(fixture.teams.home.code);
+  const awayFlagUrl = getFlagUrl(fixture.teams.away.code);
+
+  const homeColors = getNationalColors(fixture.teams.home.code);
+  const awayColors = getNationalColors(fixture.teams.away.code);
 
   return (
     <div
-      className={`bg-stadium-indigo border ${borderColor} rounded-2xl overflow-hidden shadow-2xl mb-4`}
+      className={`relative rounded-2xl overflow-hidden shadow-2xl mb-4 border ${borderColor}`}
       style={{ boxShadow: shadowColor }}
     >
-      {/* Compact score banner */}
-      <div className={`flex items-center justify-between px-4 py-3 ${topBarBg}`}>
-        <span className="text-[10px] font-bold text-stadium-gray uppercase tracking-wider">
-          {t('Group Stage', lang)}
-        </span>
-        {live && (
-          <span className="bg-rose-500/15 text-rose-400 border border-rose-500/25 text-[10px] px-2.5 py-0.5 rounded-full font-black flex items-center gap-1.5 animate-pulse">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-            {fixture.status.short === 'HT'
-              ? t('HALF TIME', lang)
-              : formatNumber(fixture.status.elapsed, lang) + '\''}
-          </span>
-        )}
-        {finished && (
-          <span className="bg-pitch-border/40 text-stadium-gray border border-pitch-border/50 text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
-            {t('FULL TIME', lang)}
-          </span>
-        )}
-        {upcoming && (
-          <span className="bg-neon-teal/10 text-neon-teal border border-neon-teal/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
-            <Clock size={10} />
-            {formatKickoff(fixture.date)}
-          </span>
-        )}
+      {/* Home national color strip — left edge */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[3px] z-10"
+        style={{ background: `linear-gradient(to bottom, ${homeColors.join(', ')})` }}
+      />
+      {/* Away national color strip — right edge */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-[3px] z-10"
+        style={{ background: `linear-gradient(to bottom, ${awayColors.join(', ')})` }}
+      />
+      {/* Animated mesh gradient + pitch markings */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          className={`absolute inset-0 ${finished ? '' : 'animate-[meshShift_12s_ease-in-out_infinite]'}`}
+          style={{
+            background: finished
+              ? 'var(--color-stadium-indigo)'
+              : `radial-gradient(ellipse at 20% 50%, rgba(0,80,60,0.35) 0%, transparent 50%),
+                 radial-gradient(ellipse at 80% 30%, rgba(10,30,70,0.5) 0%, transparent 50%),
+                 radial-gradient(ellipse at 50% 80%, rgba(0,60,45,0.25) 0%, transparent 50%),
+                 var(--color-stadium-indigo)`,
+            backgroundSize: '200% 200%',
+          }}
+        />
+        {/* Pitch markings at 5% opacity */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.05]" preserveAspectRatio="none" viewBox="0 0 1000 300">
+          <rect x="0" y="0" width="1000" height="300" fill="none" stroke="white" strokeWidth="2" />
+          <line x1="500" y1="0" x2="500" y2="300" stroke="white" strokeWidth="1.5" />
+          <circle cx="500" cy="150" r="60" fill="none" stroke="white" strokeWidth="1.5" />
+          <circle cx="500" cy="150" r="3" fill="white" />
+          <rect x="0" y="60" width="100" height="180" fill="none" stroke="white" strokeWidth="1.5" />
+          <rect x="900" y="60" width="100" height="180" fill="none" stroke="white" strokeWidth="1.5" />
+          <rect x="0" y="100" width="40" height="100" fill="none" stroke="white" strokeWidth="1" />
+          <rect x="960" y="100" width="40" height="100" fill="none" stroke="white" strokeWidth="1" />
+          <path d="M 100 120 Q 130 150 100 180" fill="none" stroke="white" strokeWidth="1" />
+          <path d="M 900 120 Q 870 150 900 180" fill="none" stroke="white" strokeWidth="1" />
+        </svg>
       </div>
 
-      {/* Compact single-row score */}
-      <div className="px-4 py-3">
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-            <span className="text-sm font-bold text-white tracking-tight truncate text-right">
-              {translateTeam(fixture.teams.home.name, lang)}
+      {/* Content */}
+      <div className="relative">
+        {/* Status bar */}
+        <div className="flex items-center justify-between px-4 py-2">
+          {live && (
+            <span
+              className="animate-[breathe_3s_ease-in-out_infinite] inline-flex items-center gap-1.5 text-[10px] font-black text-white uppercase tracking-widest px-3 py-1 rounded-full backdrop-blur-md"
+              style={{
+                background: 'rgba(225, 29, 72, 0.35)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 0 12px rgba(225,29,72,0.4)',
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+              LIVE
             </span>
-            <span className="text-2xl shrink-0">{fixture.teams.home.flag}</span>
-          </div>
-
-          <div className="shrink-0 flex flex-col items-center min-w-[80px]">
-            {(live || finished) && (
-              <>
-                <span className={`text-2xl md:text-3xl font-black font-mono tracking-wider ${live ? 'text-rose-400' : 'text-white'}`}>
-                  {formatNumber(fixture.goals.home, lang)} – {formatNumber(fixture.goals.away, lang)}
-                </span>
-                <span className={`text-[9px] font-bold uppercase tracking-widest ${live ? 'text-rose-400/70' : 'text-stadium-gray'}`}>
-                  {live
-                    ? fixture.status.short === 'HT' ? t('HT', lang) : formatNumber(fixture.status.elapsed, lang) + '\''
-                    : t('FT', lang)}
-                </span>
-              </>
-            )}
-            {upcoming && (
-              <div className="flex flex-col items-center">
-                <span className="text-lg md:text-xl font-black text-neon-teal tracking-wider">
-                  <Countdown targetDate={fixture.date} lang={lang} />
-                </span>
-                <span className="text-[9px] text-neon-teal/60 font-bold uppercase tracking-widest">
-                  {t('KICK-OFF', lang)}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 flex-1 min-w-0 justify-start">
-            <span className="text-2xl shrink-0">{fixture.teams.away.flag}</span>
-            <span className="text-sm font-bold text-white tracking-tight truncate">
-              {translateTeam(fixture.teams.away.name, lang)}
+          )}
+          {!live && (
+            <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">
+              {t('Group Stage', lang)}
             </span>
+          )}
+          {finished && (
+            <span className="bg-white/10 text-white/80 border border-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider backdrop-blur-sm">
+              {t('FULL TIME', lang)}
+            </span>
+          )}
+          {upcoming && (
+            <span className="bg-neon-teal/20 text-neon-teal border border-neon-teal/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5 backdrop-blur-sm">
+              <Clock size={10} />
+              {formatKickoff(fixture.date)}
+            </span>
+          )}
+        </div>
+
+        {/* Teams + score with flag crests */}
+        <div className="px-6 py-5 md:py-7">
+          <div className="flex items-center justify-center gap-4 md:gap-6">
+            <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+              <FlagCrest code={fixture.teams.home.code} fallbackEmoji={fixture.teams.home.flag} size="xxl" muted={finished} />
+              <span className={`text-xs md:text-sm font-bold tracking-tight text-center ${finished ? 'text-white/50' : 'text-white'}`} style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
+                {translateTeam(fixture.teams.home.name, lang)}
+              </span>
+            </div>
+
+            <div className="shrink-0 flex flex-col items-center">
+              {(live || finished) && (
+                <>
+                  <div className="flex items-center gap-2">
+                    {/* Home score capsule */}
+                    <div
+                      className="relative rounded-xl w-14 h-14 md:w-16 md:h-16 flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(180deg, rgba(30,40,60,0.9) 0%, rgba(15,20,35,0.95) 100%)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: live
+                          ? '0 0 20px rgba(225,29,72,0.3), inset 0 1px 0 rgba(255,255,255,0.08)'
+                          : '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <span
+                        className="text-3xl md:text-4xl font-black tracking-wider text-white"
+                        style={{ fontFamily: 'var(--font-orbitron), monospace' }}
+                      >
+                        {formatNumber(fixture.goals.home, lang)}
+                      </span>
+                    </div>
+
+                    {/* Center time ring */}
+                    <div className={`relative mx-2 shrink-0 ${live ? 'animate-[breathe_3s_ease-in-out_infinite]' : ''}`} style={{ width: 48, height: 48, boxShadow: live ? '0 0 12px rgba(225,29,72,0.3)' : 'none', borderRadius: '50%' }}>
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
+                        {/* Track */}
+                        <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                        {/* Progress arc */}
+                        <circle
+                          cx="24" cy="24" r="20" fill="none"
+                          stroke={live ? '#fb7185' : finished ? 'rgba(255,255,255,0.25)' : 'rgba(0,245,212,0.3)'}
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeDasharray={`${2 * Math.PI * 20}`}
+                          strokeDashoffset={`${2 * Math.PI * 20 * (1 - Math.min((fixture.status.elapsed ?? (finished ? 90 : 0)) / 90, 1))}`}
+                          style={{ transition: 'stroke-dashoffset 1s ease' }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span
+                          className={`text-[10px] font-black ${live ? 'text-rose-400' : finished ? 'text-white/50' : 'text-neon-teal/60'}`}
+                          style={{ fontFamily: 'var(--font-orbitron), monospace' }}
+                        >
+                          {live
+                            ? fixture.status.short === 'HT' ? 'HT' : (fixture.status.elapsed ?? 0) + '\''
+                            : finished ? 'FT' : 'VS'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Away score capsule */}
+                    <div
+                      className="relative rounded-xl w-14 h-14 md:w-16 md:h-16 flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(180deg, rgba(30,40,60,0.9) 0%, rgba(15,20,35,0.95) 100%)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: live
+                          ? '0 0 20px rgba(225,29,72,0.3), inset 0 1px 0 rgba(255,255,255,0.08)'
+                          : '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <span
+                        className="text-3xl md:text-4xl font-black tracking-wider text-white"
+                        style={{ fontFamily: 'var(--font-orbitron), monospace' }}
+                      >
+                        {formatNumber(fixture.goals.away, lang)}
+                      </span>
+                    </div>
+                  </div>
+
+                </>
+              )}
+              {upcoming && (
+                <div className="flex flex-col items-center">
+                  <div
+                    className="rounded-xl px-5 py-2"
+                    style={{
+                      background: 'linear-gradient(180deg, rgba(30,40,60,0.9) 0%, rgba(15,20,35,0.95) 100%)',
+                      border: '1px solid rgba(0,245,212,0.15)',
+                      boxShadow: '0 0 20px rgba(0,245,212,0.1), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    <span
+                      className="text-xl md:text-2xl font-black text-neon-teal tracking-wider"
+                      style={{ fontFamily: 'var(--font-orbitron), monospace' }}
+                    >
+                      <Countdown targetDate={fixture.date} lang={lang} />
+                    </span>
+                  </div>
+                  <span className="text-[9px] text-neon-teal/70 font-bold uppercase tracking-widest mt-2">
+                    {t('KICK-OFF', lang)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+              <FlagCrest code={fixture.teams.away.code} fallbackEmoji={fixture.teams.away.flag} size="xxl" muted={finished} />
+              <span className={`text-xs md:text-sm font-bold tracking-tight text-center ${finished ? 'text-white/50' : 'text-white'}`} style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
+                {translateTeam(fixture.teams.away.name, lang)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Mini event timeline bar */}
+      {(live || finished) && (fixture.events?.length ?? 0) > 0 && (() => {
+        const maxMin = finished ? 90 : Math.max(fixture.status.elapsed ?? 90, 90);
+        const keyEvents = (fixture.events ?? []).filter(e => e.type === 'goal' || e.type === 'red-card');
+        return (
+          <div className="relative px-6 pb-3">
+            {/* Track */}
+            <div className="relative h-[6px] rounded-full bg-white/[0.06] overflow-visible">
+              {/* Elapsed fill */}
+              <div
+                className="absolute top-0 left-0 h-full rounded-full"
+                style={{
+                  width: `${Math.min(((fixture.status.elapsed ?? (finished ? 90 : 0)) / maxMin) * 100, 100)}%`,
+                  background: live
+                    ? 'linear-gradient(90deg, rgba(225,29,72,0.3), rgba(225,29,72,0.5))'
+                    : 'rgba(255,255,255,0.08)',
+                }}
+              />
+              {/* Half-time marker */}
+              <div className="absolute top-0 bottom-0 w-px bg-white/10" style={{ left: '50%' }} />
+              {/* Event markers */}
+              {keyEvents.map((ev, i) => (
+                <div
+                  key={i}
+                  className="absolute -top-[5px] group cursor-default"
+                  style={{ left: `${Math.min((ev.minute / maxMin) * 100, 99)}%`, transform: 'translateX(-50%)' }}
+                >
+                  <span className="text-[10px] leading-none select-none">
+                    {ev.type === 'goal' ? '⚽' : '🟥'}
+                  </span>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex items-center px-2 py-1 rounded-lg bg-deep-navy/95 border border-pitch-border/50 shadow-xl whitespace-nowrap z-20">
+                    <span className="text-[9px] font-bold text-white">{ev.player}</span>
+                    <span className="text-[9px] text-stadium-gray ml-1">{ev.minute}'</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Time labels */}
+            <div className="flex justify-between mt-1">
+              <span className="text-[7px] text-white/20 font-mono">0'</span>
+              <span className="text-[7px] text-white/20 font-mono">45'</span>
+              <span className="text-[7px] text-white/20 font-mono">90'</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* View details link */}
       {hasDetails && (
@@ -328,14 +499,18 @@ function MatchCard({ fixture, lang, pinnedTeams = [], onClick }: { fixture: Fixt
   return (
     <motion.div
       onClick={onClick}
-      className={`snap-center shrink-0 w-[260px] md:w-[280px] bg-stadium-indigo/90 border rounded-2xl p-4 backdrop-blur-md transition-all shadow-xl cursor-pointer ${
-        finished
-          ? 'border-pitch-border/60 opacity-75'
-          : 'border-pitch-border hover:border-cyber-orchid/30'
-      } ${hasPinnedTeam ? 'border-l-2 border-l-volt-yellow' : ''}`}
-      whileHover={{ y: -2, scale: 1.01 }}
-      transition={{ duration: 0.2 }}
+      className={`snap-center shrink-0 w-[300px] md:w-[320px] rounded-2xl cursor-pointer ${
+        finished ? 'opacity-70' : ''
+      } ${hasPinnedTeam ? 'ring-1 ring-volt-yellow/40' : ''}`}
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+        padding: 1,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      }}
+      whileHover={{ y: -4, boxShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 15px rgba(106,13,173,0.1)' }}
+      transition={{ duration: 0.25 }}
     >
+      <div className="bg-stadium-indigo/95 rounded-[15px] p-4 backdrop-blur-md h-full">
       <div className="flex justify-between items-center mb-2.5">
         <span className="text-[9px] font-bold text-stadium-gray tracking-wider uppercase">
           {t('Group Stage', lang)}
@@ -353,7 +528,7 @@ function MatchCard({ fixture, lang, pinnedTeams = [], onClick }: { fixture: Fixt
 
       <div className="flex items-center justify-between gap-1.5 my-2.5">
         <div className="flex items-center gap-2 flex-1 min-w-0 justify-start text-start">
-          <span className="text-base shrink-0">{fixture.teams.home.flag}</span>
+          <FlagCrest code={fixture.teams.home.code} fallbackEmoji={fixture.teams.home.flag} size="sm" />
           <span className="text-xs font-semibold tracking-tight text-white truncate">
             {translateTeam(fixture.teams.home.name, lang)}
           </span>
@@ -373,7 +548,7 @@ function MatchCard({ fixture, lang, pinnedTeams = [], onClick }: { fixture: Fixt
           <span className="text-xs font-semibold tracking-tight text-white truncate">
             {translateTeam(fixture.teams.away.name, lang)}
           </span>
-          <span className="text-base shrink-0">{fixture.teams.away.flag}</span>
+          <FlagCrest code={fixture.teams.away.code} fallbackEmoji={fixture.teams.away.flag} size="sm" />
         </div>
       </div>
 
@@ -384,6 +559,14 @@ function MatchCard({ fixture, lang, pinnedTeams = [], onClick }: { fixture: Fixt
           </span>
         </div>
       )}
+      {!finished && !isMatchLive(fixture.status.short) && (
+        <div className="mt-2.5 pt-2 border-t border-pitch-border/30 flex justify-center">
+          <span className="text-[9px] text-neon-teal/60 font-bold uppercase tracking-wider">
+            {t('UPCOMING', lang)}
+          </span>
+        </div>
+      )}
+      </div>
     </motion.div>
   );
 }
@@ -482,24 +665,10 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
           {heroMatch && <MatchHero fixture={heroMatch} lang={lang} onClick={() => onMatchClick?.(heroMatch)} />}
 
           {scheduleRow.length > 0 && (
-            <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin items-start justify-center">
-              {scheduleUpcoming.length > 0 && scheduleFinished.length > 0 && (
-                <div className="shrink-0 self-center text-[8px] font-bold uppercase tracking-widest text-neon-teal/70 [writing-mode:vertical-lr] rotate-180">
-                  {t('UPCOMING', lang)}
-                </div>
-              )}
+            <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin items-stretch justify-center">
               {scheduleUpcoming.map(fixture => (
                 <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} onClick={() => onMatchClick?.(fixture)} />
               ))}
-              {scheduleUpcoming.length > 0 && scheduleFinished.length > 0 && (
-                <div className="shrink-0 self-stretch flex flex-col items-center justify-center gap-1 mx-1">
-                  <div className="flex-1 w-px bg-pitch-border/40" />
-                  <div className="shrink-0 self-center text-[8px] font-bold uppercase tracking-widest text-stadium-gray/50 [writing-mode:vertical-lr] rotate-180">
-                    {t('FINISHED', lang)}
-                  </div>
-                  <div className="flex-1 w-px bg-pitch-border/40" />
-                </div>
-              )}
               {scheduleFinished.map(fixture => (
                 <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} onClick={() => onMatchClick?.(fixture)} />
               ))}
