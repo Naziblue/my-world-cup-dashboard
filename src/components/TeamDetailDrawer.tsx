@@ -17,8 +17,9 @@ interface TeamDetailDrawerProps {
 }
 
 function isLang(en: string, lang: 'en' | 'fa') {
-  const map: Record<string, string> = { P: 'بازی', W: 'برد', D: 'مساوی', L: 'باخت', GF: 'گل زده', GA: 'گل خورده', GD: 'تفاضل', Pts: 'امتیاز' };
-  return lang === 'fa' ? (map[en] ?? en) : en;
+  const mapEn: Record<string, string> = { P: 'Played', W: 'Won', D: 'Drawn', L: 'Lost', GF: 'Goals For', GA: 'Goals Against', GD: 'Goal Diff', Pts: 'Points' };
+  const mapFa: Record<string, string> = { P: 'بازی', W: 'برد', D: 'مساوی', L: 'باخت', GF: 'گل زده', GA: 'گل خورده', GD: 'تفاضل', Pts: 'امتیاز' };
+  return lang === 'fa' ? (mapFa[en] ?? en) : (mapEn[en] ?? en);
 }
 
 const POS_ORDER: Record<string, number> = { Goalkeeper: 0, Defender: 1, Midfielder: 2, Attacker: 3 };
