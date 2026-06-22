@@ -85,27 +85,13 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10 md:py-14 text-white font-sans">
+    <main className="max-w-7xl mx-auto px-4 py-6 md:py-8 text-white font-sans">
       {/* Title Header */}
-      <header className="mb-10 flex flex-col gap-6 md:flex-row md:justify-between md:items-end border-b border-pitch-border pb-8 text-start">
-        <div className="flex-1">
-          <div className="inline-flex items-center gap-1.5 text-[10px] bg-electric-purple/10 text-cyber-orchid px-3.5 py-1 rounded-full border border-electric-purple/20 font-bold uppercase tracking-widest mb-3">
-            <Globe size={11} className="shrink-0" />
-            {t('FIFA World Cup 2026', lang)}
-          </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-center gap-4">
-            <img 
-              src="/fifa-logo.png" 
-              alt="FIFA World Cup 2026 Logo" 
-              className="h-14 md:h-16 w-auto shrink-0 rounded-xl shadow-lg border border-pitch-border/50 bg-slate-950/20"
-            />
-            <span>{t('World Cup Dashboard', lang)}</span>
-          </h1>
-          <p className="text-stadium-gray text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-            {t('Real-time standings, comparative metrics, and dynamic third-place wildcard calculations for the 48-team tournament.', lang)}
-          </p>
-        </div>
-        
+      <header className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center border-b border-pitch-border pb-5 text-start">
+        <h1 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white">
+          {t('FIFA World Cup 2026', lang)}
+        </h1>
+
         <div className="flex gap-3 items-center shrink-0">
           <button 
             onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}

@@ -17,6 +17,27 @@ export interface Group {
   teams: Team[];
 }
 
+export interface MatchEvent {
+  minute: number;
+  team: 'home' | 'away';
+  type: 'goal' | 'red-card' | 'yellow-card';
+  player: string;
+  assist?: string;
+}
+
+export interface MatchStatistic {
+  label: string;
+  home: number;
+  away: number;
+}
+
+export interface Substitution {
+  minute: number;
+  team: 'home' | 'away';
+  playerIn: string;
+  playerOut: string;
+}
+
 export interface Fixture {
   id: number;
   date: string;
@@ -43,6 +64,9 @@ export interface Fixture {
     home: number | null;
     away: number | null;
   };
+  events?: MatchEvent[];
+  statistics?: MatchStatistic[];
+  substitutions?: Substitution[];
 }
 
 export interface StandingsResponse {

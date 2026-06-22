@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Group, Team, Fixture } from '@/types';
+import { Group, Team, Fixture, MatchEvent, MatchStatistic, Substitution } from '@/types';
 
 // Mock World Cup 2026 Standings Data (serving as high-quality fallback)
 const mockWorldCupGroups: Group[] = [
@@ -309,7 +309,22 @@ const mockWorldCupFixtures: Fixture[] = [
       home: { name: 'Scotland', code: 'SCO', flag: '🏴\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F', logo: 'https://media.api-sports.io/football/teams/1533.png' },
       away: { name: 'Morocco', code: 'MAR', flag: '🇲🇦', logo: 'https://media.api-sports.io/football/teams/23.png' }
     },
-    goals: { home: 0, away: 1 }
+    goals: { home: 0, away: 1 },
+    events: [
+      { minute: 12, team: 'home', type: 'yellow-card', player: 'S. McTominay' },
+      { minute: 34, team: 'away', type: 'goal', player: 'Y. En-Nesyri', assist: 'H. Ziyech' },
+      { minute: 41, team: 'home', type: 'red-card', player: 'A. Robertson' },
+    ],
+    statistics: [
+      { label: 'Possession', home: 38, away: 62 },
+      { label: 'Shots on Target', home: 2, away: 5 },
+      { label: 'Total Shots', home: 4, away: 9 },
+      { label: 'Fouls', home: 8, away: 4 },
+      { label: 'Corners', home: 1, away: 6 },
+    ],
+    substitutions: [
+      { minute: 42, team: 'home', playerIn: 'L. Cooper', playerOut: 'A. Robertson' },
+    ],
   },
   {
     id: 1489391,
