@@ -515,8 +515,8 @@ export async function GET(request: Request) {
           };
         })
         .sort((a: Fixture, b: Fixture) => {
-          const isALive = ['1H', '2H', 'HT', 'ET', 'P'].includes(a.status.short);
-          const isBLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(b.status.short);
+          const isALive = ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(a.status.short);
+          const isBLive = ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(b.status.short);
           if (isALive && !isBLive) return -1;
           if (!isALive && isBLive) return 1;
           return new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -527,7 +527,7 @@ export async function GET(request: Request) {
 
     // Pre-fetch events for all started matches. Uses persistent cache for FT matches.
     if (!isMockKey && fixtures.length > 0) {
-      const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
+      const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(s);
       const allStarted = fixtures.filter(f => f.status.short === 'FT' || isLive(f.status.short));
 
       // Apply cached data for FT matches; live matches always re-fetch
@@ -643,7 +643,7 @@ export async function GET(request: Request) {
             const awayName = f.teams.away.name.toLowerCase().trim();
             const isHome = homeName === teamNameLower;
             const isAway = awayName === teamNameLower;
-            const isLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(f.status.short);
+            const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(f.status.short);
             const isFinished = f.status.short === 'FT';
             return (isHome || isAway) && (isLive || isFinished);
           });

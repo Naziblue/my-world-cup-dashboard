@@ -76,7 +76,7 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
       .filter(f => {
         const isHome = f.teams.home.name.toLowerCase() === teamName;
         const isAway = f.teams.away.name.toLowerCase() === teamName;
-        return (isHome || isAway) && (f.status.short === 'FT' || ['1H', '2H', 'HT', 'ET', 'P'].includes(f.status.short));
+        return (isHome || isAway) && (f.status.short === 'FT' || ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(f.status.short));
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [team, fixtures]);
@@ -236,7 +236,7 @@ export default function TeamDetailDrawer({ team, group, fixtures, lang, isPinned
                       const opponent = isHome ? fix.teams.away : fix.teams.home;
                       const gFor = isHome ? (fix.goals.home ?? 0) : (fix.goals.away ?? 0);
                       const gAgainst = isHome ? (fix.goals.away ?? 0) : (fix.goals.home ?? 0);
-                      const isLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(fix.status.short);
+                      const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(fix.status.short);
                       const resultColor = isLive ? 'text-rose-400' : gFor > gAgainst ? 'text-emerald-400' : gFor < gAgainst ? 'text-rose-400' : 'text-amber-400';
 
                       return (

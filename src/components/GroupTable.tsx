@@ -248,7 +248,7 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                 </div>
               ) : (
                 groupFixtures.map((fix) => {
-                  const isLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(fix.status.short);
+                  const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(fix.status.short);
                   const isFinished = fix.status.short === 'FT';
                   
                   const matchDate = new Date(fix.date);

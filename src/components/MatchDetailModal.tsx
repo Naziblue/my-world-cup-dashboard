@@ -90,7 +90,7 @@ export default function MatchDetailModal({ fixture, lang, onClose }: MatchDetail
     ...substitutions.map(sub => ({ minute: sub.minute, team: sub.team, kind: 'substitution', player: sub.playerIn, detail: sub.playerOut })),
   ].sort((a, b) => a.minute - b.minute);
 
-  const isLive = fixture && ['1H', '2H', 'HT', 'ET', 'P'].includes(fixture.status.short);
+  const isLive = fixture && ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(fixture.status.short);
   const isFinished = fixture?.status.short === 'FT';
 
   return (

@@ -94,7 +94,7 @@ export default function Home() {
   useEffect(() => {
     if (!data?.fixtures) return;
 
-    const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
+    const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(s);
     const isMatchFinished = (s: string) => s === 'FT';
 
     const computeInterval = (): number => {
@@ -347,7 +347,7 @@ export default function Home() {
               } else if (liveFilter) {
                 const liveTeams = new Set(
                   data.fixtures
-                    .filter(f => ['1H', '2H', 'HT', 'ET', 'P'].includes(f.status.short))
+                    .filter(f => ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(f.status.short))
                     .flatMap(f => [f.teams.home.name.toLowerCase(), f.teams.away.name.toLowerCase()])
                 );
                 filtered = data.groups.filter(g =>

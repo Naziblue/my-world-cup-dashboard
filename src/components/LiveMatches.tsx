@@ -16,7 +16,7 @@ interface LiveMatchesProps {
   onMatchClick?: (fixture: Fixture) => void;
 }
 
-const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
+const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(s);
 const isMatchFinished = (s: string) => s === 'FT';
 const isMatchUpcoming = (s: string) => s === 'NS' || s === 'TBD';
 
@@ -286,7 +286,7 @@ function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 
               }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              LIVE
+              {fixture.status.short === 'INT' ? 'INTERRUPTED' : fixture.status.short === 'HT' ? 'HALF TIME' : 'LIVE'}
             </span>
           )}
           {!live && (
@@ -352,7 +352,7 @@ function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 
                           strokeWidth="3"
                           strokeLinecap="round"
                           strokeDasharray={`${2 * Math.PI * 20}`}
-                          strokeDashoffset={`${2 * Math.PI * 20 * (1 - Math.min((fixture.status.elapsed ?? (finished ? 90 : 0)) / 90, 1))}`}
+                          strokeDashoffset={`${2 * Math.PI * 20 * (1 - Math.min((fixture.status.elapsed ?? (['HT','INT','BT'].includes(fixture.status.short) ? 45 : finished ? 90 : 0)) / 90, 1))}`}
                           style={{ transition: 'stroke-dashoffset 1s ease' }}
                         />
                       </svg>
@@ -362,7 +362,10 @@ function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 
                           style={{ fontFamily: 'var(--font-orbitron), monospace' }}
                         >
                           {live
-                            ? fixture.status.short === 'HT' ? 'HT' : (fixture.status.elapsed ?? 0) + '\''
+                            ? fixture.status.short === 'HT' ? 'HT'
+                            : fixture.status.short === 'INT' ? 'INT'
+                            : fixture.status.short === 'BT' ? 'BT'
+                            : (fixture.status.elapsed ?? 0) + '\''
                             : finished ? 'FT' : 'VS'}
                         </span>
                       </div>
@@ -436,7 +439,7 @@ function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 
               <div
                 className="absolute top-0 left-0 h-full rounded-full"
                 style={{
-                  width: `${Math.min(((fixture.status.elapsed ?? (finished ? 90 : 0)) / maxMin) * 100, 100)}%`,
+                  width: `${Math.min(((fixture.status.elapsed ?? (['HT','INT','BT'].includes(fixture.status.short) ? 45 : finished ? 90 : 0)) / maxMin) * 100, 100)}%`,
                   background: live
                     ? 'linear-gradient(90deg, rgba(225,29,72,0.3), rgba(225,29,72,0.5))'
                     : 'rgba(255,255,255,0.08)',
