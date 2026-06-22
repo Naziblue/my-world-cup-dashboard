@@ -197,7 +197,6 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                             {translateTeam(team.name, lang)}
                           </span>
                           <span className="text-[9px] text-stadium-gray/80 font-normal">{team.code}</span>
-                          {rank === 1 && <Trophy size={10} className="text-volt-yellow shrink-0" />}
                         </div>
                       </td>
                       <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.played, lang)}</td>
