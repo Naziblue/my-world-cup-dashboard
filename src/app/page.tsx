@@ -214,9 +214,9 @@ export default function Home() {
 
       {/* Control Bar (Tabs & Search) */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-stadium-indigo border border-pitch-border p-3 rounded-2xl mb-8 backdrop-blur-md">
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin shrink-0">
           <button 
-            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'groups' 
                 ? 'bg-electric-purple text-white border border-cyber-orchid/30' 
                 : 'text-stadium-gray hover:bg-deep-navy hover:text-white border border-transparent'
@@ -227,7 +227,7 @@ export default function Home() {
             {t('Groups Grid', lang)}
           </button>
           <button 
-            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'third-place' 
                 ? 'bg-electric-purple text-white border border-cyber-orchid/30' 
                 : 'text-stadium-gray hover:bg-deep-navy hover:text-white border border-transparent'
@@ -238,7 +238,7 @@ export default function Home() {
             {t('Third Place Wildcard', lang)}
           </button>
           <button 
-            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'bracket' 
                 ? 'bg-electric-purple text-white border border-cyber-orchid/30' 
                 : 'text-stadium-gray hover:bg-deep-navy hover:text-white border border-transparent'
@@ -249,7 +249,7 @@ export default function Home() {
             {t('Knockout Bracket', lang)}
           </button>
           <button 
-            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
               activeTab === 'info' 
                 ? 'bg-electric-purple text-white border border-cyber-orchid/30' 
                 : 'text-stadium-gray hover:bg-deep-navy hover:text-white border border-transparent'
