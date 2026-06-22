@@ -173,7 +173,12 @@ export default function Home() {
     <main className="max-w-7xl mx-auto px-4 py-6 md:py-8 text-white font-sans">
       {/* Title Header */}
       <header className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center border-b border-pitch-border pb-5 text-start">
-        <h1 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white">
+        <h1 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white flex items-center gap-3">
+          <img
+            src="/fifa-logo.png"
+            alt="FIFA World Cup 2026"
+            className="h-10 md:h-11 w-auto shrink-0 rounded-lg"
+          />
           {t('FIFA World Cup 2026', lang)}
         </h1>
 
