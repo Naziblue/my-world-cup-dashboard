@@ -11,6 +11,7 @@ interface LiveMatchesProps {
   nextRefreshSeconds: number;
   lang: 'en' | 'fa';
   pinnedTeams?: string[];
+  onMatchClick?: (fixture: Fixture) => void;
 }
 
 const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
@@ -195,8 +196,7 @@ function HeroEventsAndStats({ fixture, lang }: { fixture: Fixture; lang: 'en' | 
   );
 }
 
-function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
-  const [expanded, setExpanded] = useState(false);
+function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 'fa'; onClick?: () => void }) {
   const live = isMatchLive(fixture.status.short);
   const finished = isMatchFinished(fixture.status.short);
   const upcoming = isMatchUpcoming(fixture.status.short);
@@ -301,25 +301,21 @@ function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
         </div>
       </div>
 
-      {/* Expand toggle for details */}
+      {/* View details link */}
       {hasDetails && (
-        <>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 border-t border-pitch-border/20 text-[10px] font-bold uppercase tracking-widest text-stadium-gray/60 hover:text-stadium-gray hover:bg-pitch-border/5 transition-colors cursor-pointer"
-          >
-            {expanded ? t('Hide Details', lang) : t('Match Details', lang)}
-            <ChevronDown size={12} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
-          </button>
-
-          {expanded && <HeroEventsAndStats fixture={fixture} lang={lang} />}
-        </>
+        <button
+          onClick={onClick}
+          className="w-full flex items-center justify-center gap-1.5 py-1.5 border-t border-pitch-border/20 text-[10px] font-bold uppercase tracking-widest text-stadium-gray/60 hover:text-stadium-gray hover:bg-pitch-border/5 transition-colors cursor-pointer"
+        >
+          {t('Match Details', lang)}
+          <ChevronDown size={12} className="-rotate-90" />
+        </button>
       )}
     </div>
   );
 }
 
-function MatchCard({ fixture, lang, pinnedTeams = [] }: { fixture: Fixture; lang: 'en' | 'fa'; pinnedTeams?: string[] }) {
+function MatchCard({ fixture, lang, pinnedTeams = [], onClick }: { fixture: Fixture; lang: 'en' | 'fa'; pinnedTeams?: string[]; onClick?: () => void }) {
   const finished = isMatchFinished(fixture.status.short);
   const hasPinnedTeam = pinnedTeams.includes(fixture.teams.home.code) || pinnedTeams.includes(fixture.teams.away.code);
 
@@ -331,7 +327,8 @@ function MatchCard({ fixture, lang, pinnedTeams = [] }: { fixture: Fixture; lang
 
   return (
     <motion.div
-      className={`snap-center shrink-0 w-[260px] md:w-[280px] bg-stadium-indigo/90 border rounded-2xl p-4 backdrop-blur-md transition-all shadow-xl ${
+      onClick={onClick}
+      className={`snap-center shrink-0 w-[260px] md:w-[280px] bg-stadium-indigo/90 border rounded-2xl p-4 backdrop-blur-md transition-all shadow-xl cursor-pointer ${
         finished
           ? 'border-pitch-border/60 opacity-75'
           : 'border-pitch-border hover:border-cyber-orchid/30'
@@ -391,7 +388,7 @@ function MatchCard({ fixture, lang, pinnedTeams = [] }: { fixture: Fixture; lang
   );
 }
 
-export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinnedTeams = [] }: LiveMatchesProps) {
+export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinnedTeams = [], onMatchClick }: LiveMatchesProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -482,7 +479,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
         </div>
       ) : (
         <>
-          {heroMatch && <MatchHero fixture={heroMatch} lang={lang} />}
+          {heroMatch && <MatchHero fixture={heroMatch} lang={lang} onClick={() => onMatchClick?.(heroMatch)} />}
 
           {scheduleRow.length > 0 && (
             <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin items-start">
@@ -492,7 +489,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
                 </div>
               )}
               {scheduleUpcoming.map(fixture => (
-                <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} />
+                <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} onClick={() => onMatchClick?.(fixture)} />
               ))}
               {scheduleUpcoming.length > 0 && scheduleFinished.length > 0 && (
                 <div className="shrink-0 self-stretch flex flex-col items-center justify-center gap-1 mx-1">
@@ -504,7 +501,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
                 </div>
               )}
               {scheduleFinished.map(fixture => (
-                <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} />
+                <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} onClick={() => onMatchClick?.(fixture)} />
               ))}
             </div>
           )}

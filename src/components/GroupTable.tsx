@@ -14,9 +14,10 @@ interface GroupTableProps {
   pinnedTeams?: string[];
   onTogglePin?: (code: string) => void;
   onTeamClick?: (team: Team) => void;
+  onMatchClick?: (fixture: Fixture) => void;
 }
 
-export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin, onTeamClick }: GroupTableProps) {
+export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin, onTeamClick, onMatchClick }: GroupTableProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -268,9 +269,10 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                     : '';
 
                   return (
-                    <div 
+                    <div
                       key={fix.id}
-                      className="bg-rose-950/10 border border-rose-500/10 rounded-xl p-2 flex items-center justify-between gap-1 hover:bg-rose-950/25 transition-colors text-xs font-semibold text-rose-100"
+                      className={`bg-rose-950/10 border border-rose-500/10 rounded-xl p-2 flex items-center justify-between gap-1 hover:bg-rose-950/25 transition-colors text-xs font-semibold text-rose-100 ${onMatchClick ? 'cursor-pointer' : ''}`}
+                      onClick={onMatchClick ? (e) => { e.stopPropagation(); onMatchClick(fix); } : undefined}
                     >
                       {/* Home Team */}
                       <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-start text-start">

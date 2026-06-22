@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Group, Team, StandingsResponse } from '@/types';
+import { Group, Team, Fixture, StandingsResponse } from '@/types';
 import GroupTable from '@/components/GroupTable';
 import ThirdPlaceTable from '@/components/ThirdPlaceTable';
 import LiveMatches from '@/components/LiveMatches';
 import KnockoutBracket from '@/components/KnockoutBracket';
 import TeamDetailDrawer from '@/components/TeamDetailDrawer';
+import MatchDetailModal from '@/components/MatchDetailModal';
 import {
   Trophy,
   Search,
@@ -34,6 +35,7 @@ export default function Home() {
   const [lang, setLang] = useState<'en' | 'fa'>('en');
   const [pinnedTeams, setPinnedTeams] = useState<string[]>([]);
   const [drawerTeam, setDrawerTeam] = useState<{ team: Team; group: Group } | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<Fixture | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load pinned teams from localStorage on mount
@@ -202,7 +204,7 @@ export default function Home() {
 
       {/* Live Matches & Scores Widget */}
       {data && data.fixtures && data.fixtures.length > 0 && (
-        <LiveMatches fixtures={data.fixtures} nextRefreshSeconds={nextRefreshSeconds} lang={lang} pinnedTeams={pinnedTeams} />
+        <LiveMatches fixtures={data.fixtures} nextRefreshSeconds={nextRefreshSeconds} lang={lang} pinnedTeams={pinnedTeams} onMatchClick={setSelectedMatch} />
       )}
 
       {/* Control Bar (Tabs & Search) */}
@@ -367,6 +369,7 @@ export default function Home() {
                       pinnedTeams={pinnedTeams}
                       onTogglePin={togglePin}
                       onTeamClick={(team) => openTeamDetail(team, group)}
+                      onMatchClick={setSelectedMatch}
                     />
                   ))}
                 </div>
@@ -452,6 +455,13 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Match Detail Modal */}
+      <MatchDetailModal
+        fixture={selectedMatch}
+        lang={lang}
+        onClose={() => setSelectedMatch(null)}
+      />
 
       {/* Team Detail Drawer */}
       <TeamDetailDrawer
