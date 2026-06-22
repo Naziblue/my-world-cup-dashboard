@@ -171,48 +171,59 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 md:py-8 text-white font-sans">
-      {/* Hero Banner with stadium image */}
-      <header
-        className="mb-6 relative rounded-2xl overflow-hidden"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1400&q=80&auto=format')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-deep-navy/95 via-deep-navy/85 to-deep-navy/75" />
-        <div className="relative flex flex-col gap-4 md:flex-row md:justify-between md:items-center px-6 py-5">
-          <h1 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white flex items-center gap-3">
+      {/* Hero Banner — FIFA-style dark geometric header */}
+      <header className="mb-6 relative rounded-2xl overflow-hidden">
+        {/* Dark geometric background with angular slashes */}
+        <div className="absolute inset-0 bg-stadium-indigo" />
+        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1400 200">
+          <polygon points="0,0 1400,0 1400,200 0,200" fill="var(--color-stadium-indigo)" />
+          <polygon points="600,0 1400,0 1400,200 800,200" fill="rgba(0,0,0,0.25)" />
+          <polygon points="900,0 1100,0 700,200 500,200" fill="rgba(0,0,0,0.15)" />
+          <polygon points="1100,0 1250,0 950,200 800,200" fill="rgba(0,0,0,0.1)" />
+        </svg>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-electric-purple/5" />
+
+        {/* Content */}
+        <div className="relative flex flex-col gap-4 md:flex-row md:justify-between md:items-center px-6 py-6 md:py-8">
+          <div className="flex items-center gap-4">
             <img
               src="/fifa-logo.png"
               alt="FIFA World Cup 2026"
-              className="h-10 md:h-11 w-auto shrink-0 rounded-lg"
+              className="h-14 md:h-18 w-auto shrink-0"
             />
-            {t('FIFA World Cup 2026', lang)}
-          </h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white uppercase">
+                {lang === 'fa' ? 'جام جهانی فیفا' : 'FIFA WORLD CUP'}
+                <span className="text-volt-yellow">™</span>
+              </h1>
+              <p className="text-[11px] md:text-xs text-stadium-gray font-semibold tracking-widest uppercase mt-0.5">
+                {lang === 'fa' ? 'آمریکا · مکزیک · کانادا ۲۰۲۶' : 'USA · MEXICO · CANADA 2026'}
+              </p>
+            </div>
+          </div>
 
           <div className="flex gap-3 items-center shrink-0">
-          <button 
-            onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
-            className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-stadium-indigo border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer"
-          >
-            <Globe size={12} />
-            {lang === 'en' ? 'فارسی' : 'English'}
-          </button>
+            <button
+              onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-deep-navy/60 border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer backdrop-blur-sm"
+            >
+              <Globe size={12} />
+              {lang === 'en' ? 'فارسی' : 'English'}
+            </button>
 
-          <button 
-            className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-stadium-indigo border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-          >
-            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
-            {t('Sync', lang)}
-          </button>
-          
-          <div className="inline-flex items-center gap-2 text-xs bg-volt-yellow/10 text-volt-yellow px-3.5 py-2 rounded-full border border-volt-yellow/20 font-bold uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-volt-yellow animate-pulse"></span>
-            {t('Live Standings', lang)}
-          </div>
+            <button
+              className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-deep-navy/60 border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+            >
+              <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+              {t('Sync', lang)}
+            </button>
+
+            <div className="inline-flex items-center gap-2 text-xs bg-volt-yellow/10 text-volt-yellow px-3.5 py-2 rounded-full border border-volt-yellow/20 font-bold uppercase tracking-wider backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-volt-yellow animate-pulse"></span>
+              {t('Live Standings', lang)}
+            </div>
           </div>
         </div>
       </header>
