@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Group, Team, Fixture, MatchEvent, MatchStatistic, Substitution } from '@/types';
+import { Group, Team, Fixture, MatchEvent, MatchStatistic } from '@/types';
 
 // Mock World Cup 2026 Standings Data (serving as high-quality fallback)
 const mockWorldCupGroups: Group[] = [
@@ -519,6 +519,94 @@ export async function GET(request: Request) {
         });
     } else {
       fixtures = mockWorldCupFixtures;
+    }
+
+    // Fetch events + statistics for live matches and the most recent finished match (hero candidate)
+    if (!isMockKey && fixtures.length > 0) {
+      const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
+      const liveFixtures = fixtures.filter(f => isLive(f.status.short));
+      const recentFinished = fixtures
+        .filter(f => f.status.short === 'FT')
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 1);
+      const heroTargets = [...liveFixtures, ...recentFinished];
+
+      if (heroTargets.length > 0) {
+        console.log(`[API Secure Backend]: Fetching events/stats for ${heroTargets.length} hero-target fixture(s).`);
+        const detailResults = await Promise.allSettled(
+          heroTargets.map(async (fix) => {
+            const [eventsRes, statsRes] = await Promise.all([
+              fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fix.id}`, {
+                headers: { 'x-apisports-key': apiKey! },
+                next: { revalidate: 15 },
+              }),
+              fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fix.id}`, {
+                headers: { 'x-apisports-key': apiKey! },
+                next: { revalidate: 15 },
+              }),
+            ]);
+
+            const [eventsData, statsData] = await Promise.all([
+              eventsRes.ok ? eventsRes.json() : null,
+              statsRes.ok ? statsRes.json() : null,
+            ]);
+
+            const events: MatchEvent[] = [];
+            const substitutions: { minute: number; team: 'home' | 'away'; playerIn: string; playerOut: string }[] = [];
+
+            if (eventsData?.response) {
+              for (const ev of eventsData.response) {
+                const side: 'home' | 'away' = ev.team.id === (apiFixturesResponse?.find((a: any) => a.fixture.id === fix.id)?.teams?.home?.id)
+                  ? 'home' : 'away';
+                const evType = ev.type?.toLowerCase() ?? '';
+                const detail = ev.detail?.toLowerCase() ?? '';
+
+                if (evType === 'goal' || detail.includes('goal')) {
+                  events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'goal', player: ev.player?.name ?? '?', assist: ev.assist?.name || undefined });
+                } else if (evType === 'card' && detail.includes('red')) {
+                  events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'red-card', player: ev.player?.name ?? '?' });
+                } else if (evType === 'card' && detail.includes('yellow')) {
+                  events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'yellow-card', player: ev.player?.name ?? '?' });
+                } else if (evType === 'subst') {
+                  substitutions.push({ minute: ev.time.elapsed ?? 0, team: side, playerIn: ev.assist?.name ?? '?', playerOut: ev.player?.name ?? '?' });
+                }
+              }
+            }
+
+            const statistics: MatchStatistic[] = [];
+            if (statsData?.response && statsData.response.length >= 2) {
+              const homeStats = statsData.response[0]?.statistics ?? [];
+              const awayStats = statsData.response[1]?.statistics ?? [];
+              const wantedStats = ['Ball Possession', 'Shots on Goal', 'Total Shots', 'Fouls', 'Corner Kicks'];
+              for (const label of wantedStats) {
+                const hStat = homeStats.find((s: any) => s.type === label);
+                const aStat = awayStats.find((s: any) => s.type === label);
+                if (hStat && aStat) {
+                  statistics.push({
+                    label: label === 'Ball Possession' ? 'Possession' : label === 'Shots on Goal' ? 'Shots on Target' : label,
+                    home: parseInt(String(hStat.value ?? '0').replace('%', '')) || 0,
+                    away: parseInt(String(aStat.value ?? '0').replace('%', '')) || 0,
+                  });
+                }
+              }
+            }
+
+            return { fixtureId: fix.id, events, statistics, substitutions };
+          })
+        );
+
+        for (const result of detailResults) {
+          if (result.status === 'fulfilled') {
+            const { fixtureId, events, statistics, substitutions } = result.value;
+            const fix = fixtures.find(f => f.id === fixtureId);
+            if (fix) {
+              if (events.length > 0) fix.events = events;
+              if (statistics.length > 0) fix.statistics = statistics;
+              if (substitutions.length > 0) fix.substitutions = substitutions;
+            }
+          }
+        }
+      }
     }
 
     // Dynamic standings adjustment based on live or recently-finished matches

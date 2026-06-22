@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Fixture } from '@/types';
-import { Radio, Clock } from 'lucide-react';
+import { Radio, Clock, ChevronDown } from 'lucide-react';
 import { t, translateTeam, formatNumber } from '@/utils/i18n';
 
 interface LiveMatchesProps {
@@ -75,78 +75,118 @@ const eventIcon = (type: string) => {
   return '•';
 };
 
+type TimelineEntry = {
+  minute: number;
+  team: 'home' | 'away';
+  kind: 'goal' | 'red-card' | 'yellow-card' | 'substitution';
+  player: string;
+  detail?: string; // assist or playerOut
+};
+
 function HeroEventsAndStats({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
   const events = fixture.events ?? [];
   const statistics = fixture.statistics ?? [];
   const substitutions = fixture.substitutions ?? [];
 
-  const homeEvents = events.filter(e => e.team === 'home');
-  const awayEvents = events.filter(e => e.team === 'away');
+  // Merge events + substitutions into a single chronological timeline
+  const timeline: TimelineEntry[] = [
+    ...events.map(ev => ({
+      minute: ev.minute,
+      team: ev.team,
+      kind: ev.type,
+      player: ev.player,
+      detail: ev.assist,
+    })),
+    ...substitutions.map(sub => ({
+      minute: sub.minute,
+      team: sub.team,
+      kind: 'substitution' as const,
+      player: sub.playerIn,
+      detail: sub.playerOut,
+    })),
+  ].sort((a, b) => a.minute - b.minute);
 
-  if (events.length === 0 && statistics.length === 0 && substitutions.length === 0) return null;
+  if (timeline.length === 0 && statistics.length === 0) return null;
+
+  const renderIcon = (kind: string) => {
+    if (kind === 'goal') return <span>⚽</span>;
+    if (kind === 'red-card') return <span>🟥</span>;
+    if (kind === 'yellow-card') return <span>🟨</span>;
+    if (kind === 'substitution') return <span className="text-neon-teal">🔄</span>;
+    return null;
+  };
+
+  const renderContent = (entry: TimelineEntry) => {
+    if (entry.kind === 'substitution') {
+      return (
+        <span className="flex items-center gap-1 text-[11px]">
+          <span className="text-neon-teal font-bold">▲</span>
+          <span className="text-white font-semibold">{entry.player}</span>
+          <span className="text-stadium-gray/40 mx-0.5">/</span>
+          <span className="text-rose-400 font-bold">▼</span>
+          <span className="text-stadium-gray">{entry.detail}</span>
+        </span>
+      );
+    }
+    return (
+      <span className="flex items-center gap-1 text-[11px]">
+        <span className="font-semibold text-white">{entry.player}</span>
+        {entry.detail && <span className="text-stadium-gray/50 text-[9px]">({entry.detail})</span>}
+      </span>
+    );
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-pitch-border/20 border-t border-pitch-border/20">
-      {events.length > 0 && (
+    <div className="border-t border-pitch-border/20">
+      {/* Chronological timeline */}
+      {timeline.length > 0 && (
         <div className="bg-stadium-indigo px-5 py-4">
-          <div className="text-[9px] font-bold uppercase tracking-widest text-stadium-gray mb-3">
-            {t('Match Events', lang)}
+          <div className="text-[9px] font-bold uppercase tracking-widest text-stadium-gray mb-3 text-center">
+            {t('Timeline', lang)}
           </div>
-          <div className="flex gap-8">
-            <div className="flex-1 space-y-1.5">
-              {homeEvents.length > 0 ? homeEvents.map((ev, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-[11px]">
-                  <span>{eventIcon(ev.type)}</span>
-                  <span className="font-semibold text-white">{ev.player}</span>
-                  <span className="text-stadium-gray">{ev.minute}'</span>
-                </div>
-              )) : (
-                <div className="text-[10px] text-stadium-gray/50">—</div>
-              )}
-            </div>
-            <div className="flex-1 space-y-1.5">
-              {awayEvents.length > 0 ? awayEvents.map((ev, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-[11px]">
-                  <span>{eventIcon(ev.type)}</span>
-                  <span className="font-semibold text-white">{ev.player}</span>
-                  <span className="text-stadium-gray">{ev.minute}'</span>
-                  {ev.assist && <span className="text-stadium-gray/60 text-[9px]">({ev.assist})</span>}
-                </div>
-              )) : (
-                <div className="text-[10px] text-stadium-gray/50">—</div>
-              )}
+          <div className="relative">
+            {/* Center axis */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-pitch-border/30 -translate-x-1/2" />
+
+            <div className="space-y-2">
+              {timeline.map((entry, i) => {
+                const isHome = entry.team === 'home';
+                return (
+                  <div key={i} className={`flex items-center gap-2 ${isHome ? 'flex-row pr-[52%]' : 'flex-row-reverse pl-[52%]'}`}>
+                    <div className={`flex items-center gap-1.5 flex-1 min-w-0 ${isHome ? 'justify-end text-right' : 'justify-start text-left'}`}>
+                      {isHome ? (
+                        <>
+                          {renderContent(entry)}
+                          {renderIcon(entry.kind)}
+                        </>
+                      ) : (
+                        <>
+                          {renderIcon(entry.kind)}
+                          {renderContent(entry)}
+                        </>
+                      )}
+                    </div>
+                    {/* Minute marker on the axis */}
+                    <div className="shrink-0 w-8 h-5 rounded-full bg-pitch-border/20 border border-pitch-border/40 flex items-center justify-center z-10">
+                      <span className="text-[8px] font-mono font-bold text-stadium-gray">{entry.minute}'</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       )}
 
+      {/* Statistics below timeline */}
       {statistics.length > 0 && (
-        <div className="bg-stadium-indigo px-5 py-4">
-          <div className="text-[9px] font-bold uppercase tracking-widest text-stadium-gray mb-3">
+        <div className="bg-stadium-indigo px-5 py-4 border-t border-pitch-border/20">
+          <div className="text-[9px] font-bold uppercase tracking-widest text-stadium-gray mb-3 text-center">
             {t('Statistics', lang)}
           </div>
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 max-w-md mx-auto">
             {statistics.map((stat, i) => (
               <StatBar key={i} label={stat.label} home={stat.home} away={stat.away} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {substitutions.length > 0 && (
-        <div className="bg-stadium-indigo px-5 py-4 md:col-span-2 border-t border-pitch-border/20">
-          <div className="text-[9px] font-bold uppercase tracking-widest text-stadium-gray mb-2">
-            {t('Substitutions', lang)}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {substitutions.map((sub, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-[11px] bg-pitch-border/15 rounded-lg px-2.5 py-1">
-                <span className="text-neon-teal font-bold">▲</span>
-                <span className="text-white font-semibold">{sub.playerIn}</span>
-                <span className="text-rose-400 font-bold">▼</span>
-                <span className="text-stadium-gray">{sub.playerOut}</span>
-                <span className="text-stadium-gray/60 text-[9px] ml-1">{sub.minute}'</span>
-              </div>
             ))}
           </div>
         </div>
@@ -156,9 +196,11 @@ function HeroEventsAndStats({ fixture, lang }: { fixture: Fixture; lang: 'en' | 
 }
 
 function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
+  const [expanded, setExpanded] = useState(false);
   const live = isMatchLive(fixture.status.short);
   const finished = isMatchFinished(fixture.status.short);
   const upcoming = isMatchUpcoming(fixture.status.short);
+  const hasDetails = (live || finished) && ((fixture.events?.length ?? 0) > 0 || (fixture.statistics?.length ?? 0) > 0 || (fixture.substitutions?.length ?? 0) > 0);
 
   const formatKickoff = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -186,15 +228,14 @@ function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
 
   return (
     <div
-      className={`bg-stadium-indigo border ${borderColor} rounded-2xl overflow-hidden shadow-2xl mb-6`}
+      className={`bg-stadium-indigo border ${borderColor} rounded-2xl overflow-hidden shadow-2xl mb-4`}
       style={{ boxShadow: shadowColor }}
     >
-      {/* Top bar */}
-      <div className={`flex items-center justify-between px-5 py-2 ${topBarBg}`}>
+      {/* Compact score banner */}
+      <div className={`flex items-center justify-between px-4 py-3 ${topBarBg}`}>
         <span className="text-[10px] font-bold text-stadium-gray uppercase tracking-wider">
           {t('Group Stage', lang)}
         </span>
-
         {live && (
           <span className="bg-rose-500/15 text-rose-400 border border-rose-500/25 text-[10px] px-2.5 py-0.5 rounded-full font-black flex items-center gap-1.5 animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
@@ -203,13 +244,11 @@ function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
               : formatNumber(fixture.status.elapsed, lang) + '\''}
           </span>
         )}
-
         {finished && (
           <span className="bg-pitch-border/40 text-stadium-gray border border-pitch-border/50 text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
             {t('FULL TIME', lang)}
           </span>
         )}
-
         {upcoming && (
           <span className="bg-neon-teal/10 text-neon-teal border border-neon-teal/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
             <Clock size={10} />
@@ -218,26 +257,23 @@ function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
         )}
       </div>
 
-      {/* Main score / kickoff banner */}
-      <div className="px-6 py-6">
-        <div className="flex items-center justify-center gap-6 md:gap-10">
-          {/* Home */}
-          <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-            <span className="text-3xl md:text-4xl">{fixture.teams.home.flag}</span>
-            <span className="text-sm md:text-base font-bold text-white tracking-tight text-center">
+      {/* Compact single-row score */}
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+            <span className="text-sm font-bold text-white tracking-tight truncate text-right">
               {translateTeam(fixture.teams.home.name, lang)}
             </span>
-            <span className="text-[10px] font-mono text-stadium-gray">{fixture.teams.home.code}</span>
+            <span className="text-2xl shrink-0">{fixture.teams.home.flag}</span>
           </div>
 
-          {/* Center */}
-          <div className="flex flex-col items-center">
+          <div className="shrink-0 flex flex-col items-center min-w-[80px]">
             {(live || finished) && (
               <>
-                <span className={`text-4xl md:text-5xl font-black font-mono tracking-wider ${live ? 'text-rose-400' : 'text-white'}`}>
+                <span className={`text-2xl md:text-3xl font-black font-mono tracking-wider ${live ? 'text-rose-400' : 'text-white'}`}>
                   {formatNumber(fixture.goals.home, lang)} – {formatNumber(fixture.goals.away, lang)}
                 </span>
-                <span className={`text-[10px] font-bold mt-1 uppercase tracking-widest ${live ? 'text-rose-400/70' : 'text-stadium-gray'}`}>
+                <span className={`text-[9px] font-bold uppercase tracking-widest ${live ? 'text-rose-400/70' : 'text-stadium-gray'}`}>
                   {live
                     ? fixture.status.short === 'HT' ? t('HT', lang) : formatNumber(fixture.status.elapsed, lang) + '\''
                     : t('FT', lang)}
@@ -245,30 +281,40 @@ function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
               </>
             )}
             {upcoming && (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-2xl md:text-3xl font-black text-neon-teal tracking-wider">
+              <div className="flex flex-col items-center">
+                <span className="text-lg md:text-xl font-black text-neon-teal tracking-wider">
                   <Countdown targetDate={fixture.date} lang={lang} />
                 </span>
-                <span className="text-[10px] text-neon-teal/60 font-bold uppercase tracking-widest">
+                <span className="text-[9px] text-neon-teal/60 font-bold uppercase tracking-widest">
                   {t('KICK-OFF', lang)}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Away */}
-          <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-            <span className="text-3xl md:text-4xl">{fixture.teams.away.flag}</span>
-            <span className="text-sm md:text-base font-bold text-white tracking-tight text-center">
+          <div className="flex items-center gap-2 flex-1 min-w-0 justify-start">
+            <span className="text-2xl shrink-0">{fixture.teams.away.flag}</span>
+            <span className="text-sm font-bold text-white tracking-tight truncate">
               {translateTeam(fixture.teams.away.name, lang)}
             </span>
-            <span className="text-[10px] font-mono text-stadium-gray">{fixture.teams.away.code}</span>
           </div>
         </div>
       </div>
 
-      {/* Events, stats, subs — only for live or finished with data */}
-      {(live || finished) && <HeroEventsAndStats fixture={fixture} lang={lang} />}
+      {/* Expand toggle for details */}
+      {hasDetails && (
+        <>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 border-t border-pitch-border/20 text-[10px] font-bold uppercase tracking-widest text-stadium-gray/60 hover:text-stadium-gray hover:bg-pitch-border/5 transition-colors cursor-pointer"
+          >
+            {expanded ? t('Hide Details', lang) : t('Match Details', lang)}
+            <ChevronDown size={12} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+          </button>
+
+          {expanded && <HeroEventsAndStats fixture={fixture} lang={lang} />}
+        </>
+      )}
     </div>
   );
 }
