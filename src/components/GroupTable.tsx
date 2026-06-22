@@ -118,14 +118,14 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
             <table className="w-full text-xs border-collapse text-start">
               <thead>
                 <tr className="text-stadium-gray font-semibold uppercase tracking-wider border-b border-pitch-border/50 text-start">
-                  <th className="py-1.5 px-1 text-center w-8">#</th>
+                  <th className="py-1.5 px-1 text-center w-7">#</th>
                   <th className="py-1.5 px-1 text-start">{t('Team', lang)}</th>
-                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'بازی' : 'P'}</th>
-                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'برد' : 'W'}</th>
-                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'مساوی' : 'D'}</th>
-                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'باخت' : 'L'}</th>
-                  <th className="py-1.5 px-1 text-center w-9">{isRTL ? 'تفاضل' : 'GD'}</th>
-                  <th className="py-1.5 px-1 text-center w-9 font-bold text-white">{isRTL ? 'امتیاز' : 'Pts'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'ب' : 'P'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'بر' : 'W'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'م' : 'D'}</th>
+                  <th className="py-1.5 px-1 text-center w-7">{isRTL ? 'با' : 'L'}</th>
+                  <th className="py-1.5 px-1 text-center w-8">{isRTL ? 'ت‌گ' : 'GD'}</th>
+                  <th className="py-1.5 px-1 text-center w-8 font-bold text-white">{isRTL ? 'ام' : 'Pts'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-pitch-border/30">
@@ -146,11 +146,8 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
 
                   const isPinned = pinnedTeams.includes(team.code);
 
-                  // Qualification zone border
                   const zoneBorder = rank <= 2
                     ? (isRTL ? 'border-r-2 border-r-emerald-500' : 'border-l-2 border-l-emerald-500')
-                    : rank === 3
-                    ? (isRTL ? 'border-r-2 border-r-amber-500 border-dashed' : 'border-l-2 border-l-amber-500 border-dashed')
                     : '';
 
                   return (
@@ -167,8 +164,9 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                           : isPinned
                           ? 'rgba(234, 179, 8, 0.06)'
                           : undefined,
-                        borderLeftStyle: rank === 3 && !isRTL ? 'dashed' : undefined,
-                        borderRightStyle: rank === 3 && isRTL ? 'dashed' : undefined,
+                        ...(rank === 3 ? {
+                          [isRTL ? 'borderRight' : 'borderLeft']: '2px dashed rgb(245, 158, 11)',
+                        } : {}),
                       }}
                     >
                       <td className={`py-2 px-1 text-center font-bold font-mono ${rankColor}`}>
