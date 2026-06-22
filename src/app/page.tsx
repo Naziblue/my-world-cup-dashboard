@@ -108,25 +108,13 @@ export default function Home() {
 
       if (todaysFixtures.length === 0) return COOLDOWN_INTERVAL;
 
-      const hasLive = todaysFixtures.some(f => isMatchLive(f.status.short));
-      if (hasLive) return LIVE_INTERVAL;
-
-      const allFinished = todaysFixtures.every(f => isMatchFinished(f.status.short));
-      if (allFinished) return COOLDOWN_INTERVAL;
-
-      // Operational window: first kickoff → last kickoff + 3h
-      const kickoffs = todaysFixtures
-        .filter(f => !isMatchFinished(f.status.short))
-        .map(f => new Date(f.date).getTime());
-
-      if (kickoffs.length === 0) return COOLDOWN_INTERVAL;
-
-      const firstKickoff = Math.min(...kickoffs);
-      const lastKickoff = Math.max(...kickoffs);
-      const windowEnd = lastKickoff + 3 * 3600000;
+      // Operational window: first kickoff of the day → last kickoff + 3.5h
+      const allKickoffs = todaysFixtures.map(f => new Date(f.date).getTime());
+      const firstKickoff = Math.min(...allKickoffs);
+      const lastKickoff = Math.max(...allKickoffs);
+      const windowEnd = lastKickoff + 3.5 * 3600000;
 
       if (now < firstKickoff) {
-        // Pre-window: sleep until first kickoff (capped at cooldown)
         const secsUntil = Math.ceil((firstKickoff - now) / 1000);
         return Math.min(secsUntil, COOLDOWN_INTERVAL);
       }
