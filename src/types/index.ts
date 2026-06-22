@@ -91,6 +91,7 @@ export interface Fixture {
 
 export interface StandingsResponse {
   success: boolean;
+  maintenance?: boolean;
   lastUpdated: string;
   groups: Group[];
   fixtures: Fixture[];

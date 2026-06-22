@@ -433,6 +433,9 @@ export async function GET(request: Request) {
     const responses = await Promise.all(fetches);
     const fixturesRes = responses[0];
 
+    if (fixturesRes.status === 429) {
+      throw new Error('429 rate limit exceeded');
+    }
     if (!fixturesRes.ok) {
       throw new Error(`Fixtures API HTTP ${fixturesRes.status}`);
     }
@@ -740,21 +743,31 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error(`[API Secure Backend Error]:`, error);
 
-    // Serve stale cache if available when an error happens
+    const isRateLimit = error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit') || error.message?.toLowerCase().includes('too many');
+
+    if (isRateLimit) {
+      return NextResponse.json({
+        success: false,
+        maintenance: true,
+        lastUpdated: new Date().toISOString(),
+        groups: [],
+        fixtures: [],
+      });
+    }
+
     if (cachedResponse) {
-      console.log(`[API Secure Cache]: Serving stale cache on request failure.`);
       return NextResponse.json({
         ...cachedResponse.data,
-        warning: `API connection issue (${error.message || 'fetch error'}). Serving stale cache.`
+        warning: `API connection issue. Serving cached data.`
       });
     }
 
     return NextResponse.json({
-      success: true,
+      success: false,
+      maintenance: true,
       lastUpdated: new Date().toISOString(),
-      groups: mockWorldCupGroups,
-      fixtures: mockWorldCupFixtures,
-      warning: `Failed to fetch live API data (${error.message || 'API connection issue'}). Displaying pre-cached mock data.`
+      groups: [],
+      fixtures: [],
     });
   }
 }

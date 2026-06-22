@@ -72,6 +72,10 @@ export default function Home() {
         throw new Error('Failed to retrieve standings data');
       }
       const jsonData: StandingsResponse = await res.json();
+      if (jsonData.maintenance) {
+        setError('maintenance');
+        return;
+      }
       if (jsonData.success) {
         setData(jsonData);
       } else {
@@ -299,8 +303,32 @@ export default function Home() {
               ))}
             </div>
           </motion.div>
+        ) : error === 'maintenance' ? (
+          <motion.div
+            key="maintenance"
+            className="flex flex-col items-center justify-center min-h-[500px] gap-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="bg-stadium-indigo border border-pitch-border rounded-3xl p-10 md:p-14 max-w-lg text-center shadow-2xl">
+              <div className="text-5xl mb-4">🏟️</div>
+              <h2 className="text-xl md:text-2xl font-black text-white mb-3">
+                {lang === 'fa' ? 'وبسایت در حال بروزرسانی است' : 'Under Maintenance'}
+              </h2>
+              <p className="text-stadium-gray text-sm leading-relaxed mb-6">
+                {lang === 'fa'
+                  ? 'وبسایت ما در حال حاضر در دست تعمیر و نگهداری است و به زودی باز خواهد گشت.'
+                  : 'Our website is currently under maintenance and will be back shortly.'}
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-stadium-gray/60">
+                <div className="w-2 h-2 rounded-full bg-volt-yellow animate-pulse" />
+                {lang === 'fa' ? 'لطفاً بعداً مراجعه کنید' : 'Please check back soon'}
+              </div>
+            </div>
+          </motion.div>
         ) : error ? (
-          <motion.div 
+          <motion.div
             key="error"
             className="flex flex-col items-center justify-center min-h-[400px] gap-4"
             initial={{ opacity: 0 }}
@@ -309,7 +337,7 @@ export default function Home() {
           >
             <div className="text-rose-400 text-lg font-bold">{t('Error Loading Dashboard', lang)}</div>
             <p className="text-stadium-gray">{error}</p>
-            <button 
+            <button
               className="px-5 py-2.5 bg-electric-purple text-white border border-cyber-orchid/30 rounded-xl font-bold cursor-pointer transition-all hover:bg-cyber-orchid"
               onClick={() => fetchData()}
             >
