@@ -482,7 +482,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
           {heroMatch && <MatchHero fixture={heroMatch} lang={lang} onClick={() => onMatchClick?.(heroMatch)} />}
 
           {scheduleRow.length > 0 && (
-            <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin items-start">
+            <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin items-start justify-center">
               {scheduleUpcoming.length > 0 && scheduleFinished.length > 0 && (
                 <div className="shrink-0 self-center text-[8px] font-bold uppercase tracking-widest text-neon-teal/70 [writing-mode:vertical-lr] rotate-180">
                   {t('UPCOMING', lang)}
