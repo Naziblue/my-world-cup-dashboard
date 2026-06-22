@@ -15,9 +15,10 @@ interface GroupTableProps {
   onTogglePin?: (code: string) => void;
   onTeamClick?: (team: Team) => void;
   onMatchClick?: (fixture: Fixture) => void;
+  qualifiedThirdCodes?: Set<string>;
 }
 
-export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin, onTeamClick, onMatchClick }: GroupTableProps) {
+export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin, onTeamClick, onMatchClick, qualifiedThirdCodes }: GroupTableProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -131,12 +132,15 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
               <tbody className="divide-y divide-pitch-border/30">
                 {group.teams.map((team, idx) => {
                   const rank = idx + 1;
+                  const isThirdQualifiedForColor = rank === 3 && qualifiedThirdCodes?.has(team.code);
                   let rankColor = 'text-stadium-gray';
 
                   if (rank <= 2) {
                     rankColor = 'text-neon-teal';
                   } else if (rank === 3) {
-                    rankColor = 'text-volt-yellow';
+                    rankColor = isThirdQualifiedForColor ? 'text-neon-teal' : 'text-rose-400';
+                  } else if (rank === 4) {
+                    rankColor = 'text-rose-400';
                   }
 
                   const isSearched = searchQuery !== '' && (
@@ -146,10 +150,15 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
 
                   const isPinned = pinnedTeams.includes(team.code);
 
+                  const isThirdQualified = rank === 3 && qualifiedThirdCodes?.has(team.code);
                   const zoneBg = rank <= 2
                     ? 'rgba(16, 185, 129, 0.08)'
                     : rank === 3
-                    ? 'rgba(245, 158, 11, 0.08)'
+                    ? isThirdQualified
+                      ? 'rgba(16, 185, 129, 0.08)'
+                      : 'rgba(239, 68, 68, 0.07)'
+                    : rank === 4
+                    ? 'rgba(239, 68, 68, 0.07)'
                     : undefined;
 
                   return (

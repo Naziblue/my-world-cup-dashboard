@@ -330,6 +330,13 @@ export default function Home() {
             transition={{ duration: 0.25, ease: 'easeInOut' }}
           >
             {activeTab === 'groups' && data && (() => {
+              // Compute which 3rd-place teams qualify (top 8 of 12)
+              const thirdPlaceTeams = data.groups
+                .map(g => g.teams[2])
+                .filter(Boolean)
+                .sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
+              const qualifiedThirdCodes = new Set(thirdPlaceTeams.slice(0, 8).map(t => t.code));
+
               const q = searchQuery.trim().toLowerCase();
 
               // Smart search: "group X" isolator
@@ -375,6 +382,7 @@ export default function Home() {
                       onTogglePin={togglePin}
                       onTeamClick={(team) => openTeamDetail(team, group)}
                       onMatchClick={setSelectedMatch}
+                      qualifiedThirdCodes={qualifiedThirdCodes}
                     />
                   ))}
                 </div>
