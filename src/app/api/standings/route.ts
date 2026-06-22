@@ -530,10 +530,13 @@ export async function GET(request: Request) {
       const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
       const allStarted = fixtures.filter(f => f.status.short === 'FT' || isLive(f.status.short));
 
-      // Apply cached data first, collect uncached IDs
+      // Apply cached data for FT matches; live matches always re-fetch
       const uncached: Fixture[] = [];
       for (const fix of allStarted) {
-        if (eventCache[fix.id]) {
+        if (isLive(fix.status.short)) {
+          uncached.push(fix);
+          delete eventCache[fix.id]; // clear stale live data
+        } else if (eventCache[fix.id]) {
           const cached = eventCache[fix.id];
           if (cached.events.length > 0) fix.events = cached.events;
           if (cached.statistics.length > 0) fix.statistics = cached.statistics;
@@ -551,7 +554,7 @@ export async function GET(request: Request) {
           if (aLive !== bLive) return aLive - bLive;
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
-        const batch = uncached.slice(0, 5);
+        const batch = uncached.slice(0, 10);
         console.log(`[API]: Fetching events for ${batch.length}/${uncached.length} uncached matches (${Object.keys(eventCache).length} cached).`);
         {
           const results = await Promise.allSettled(
