@@ -211,19 +211,6 @@ export default function Home() {
               {lang === 'en' ? 'فارسی' : 'English'}
             </button>
 
-            <button
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-deep-navy/60 border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
-              onClick={handleRefresh}
-              disabled={refreshing || loading}
-            >
-              <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
-              {t('Sync', lang)}
-            </button>
-
-            <div className="inline-flex items-center gap-2 text-xs bg-volt-yellow/10 text-volt-yellow px-3.5 py-2 rounded-full border border-volt-yellow/20 font-bold uppercase tracking-wider backdrop-blur-sm">
-              <span className="w-2 h-2 rounded-full bg-volt-yellow animate-pulse"></span>
-              {t('Live Standings', lang)}
-            </div>
           </div>
         </div>
       </header>
