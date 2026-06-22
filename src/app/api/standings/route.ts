@@ -375,12 +375,21 @@ function getTeamMetadata(name: string) {
 // Persistent event cache for finished matches (events never change once FT)
 const eventCache: Record<number, { events: any[]; statistics: any[]; substitutions: any[] }> = {};
 
-// Shared in-memory cache for all requests (15s duration) to protect external API rate limits
-let cachedResponse: {
-  timestamp: number;
-  data: any;
-} | null = null;
-const CACHE_TTL_MS = 30000; // 30 seconds — most 7s client polls hit this cache
+// Standings cache — refreshed every 3 hours
+let standingsCache: { timestamp: number; groups: Group[] } | null = null;
+const STANDINGS_CACHE_TTL = 3 * 3600000;
+
+// Fixtures cache — refreshed every 7 seconds (scores/status)
+let fixturesCache: { timestamp: number; data: any } | null = null;
+const FIXTURES_CACHE_TTL = 7000;
+
+// Live events cache — refreshed every 180 seconds (timeline, stats)
+let liveEventsTimestamp = 0;
+const EVENTS_CACHE_TTL = 180000;
+
+// Full response cache — 7 seconds (matches fixtures)
+let cachedResponse: { timestamp: number; data: any } | null = null;
+const CACHE_TTL_MS = 7000;
 
 export async function GET(request: Request) {
   try {
@@ -407,39 +416,46 @@ export async function GET(request: Request) {
       });
     }
 
-    console.log(`[API Secure Backend]: Concurrently fetching standings & fixtures from v3.football.api-sports.io...`);
-    
-    const [standingsRes, fixturesRes] = await Promise.all([
-      fetch(standingsUrl, {
-        headers: { 'x-apisports-key': apiKey },
-        next: { revalidate: 15 } // Cache standings for 15 seconds
-      }),
-      fetch(fixturesUrl, {
-        headers: { 'x-apisports-key': apiKey },
-        next: { revalidate: 15 } // Cache fixtures for 15 seconds
-      })
-    ]);
+    // Standings: use long-lived cache, only fetch every 3 hours (1 API call)
+    const needStandings = !standingsCache || (now - standingsCache.timestamp > STANDINGS_CACHE_TTL);
+    let standingsData: any = null;
 
-    if (!standingsRes.ok || !fixturesRes.ok) {
-      throw new Error(`API returned HTTP statuses: Standings: ${standingsRes.status}, Fixtures: ${fixturesRes.status}`);
+    // Fixtures: always fetch fresh (1 API call per cycle)
+    console.log(`[API]: Fetching fixtures${needStandings ? ' + standings' : ''} from api-sports.io`);
+
+    const fetches: Promise<Response>[] = [
+      fetch(fixturesUrl, { headers: { 'x-apisports-key': apiKey } }),
+    ];
+    if (needStandings) {
+      fetches.push(fetch(standingsUrl, { headers: { 'x-apisports-key': apiKey } }));
     }
 
-    const [standingsData, fixturesData] = await Promise.all([
-      standingsRes.json(),
-      fixturesRes.json()
-    ]);
-    
-    // Check API errors
-    if (standingsData.errors && Object.keys(standingsData.errors).length > 0) {
-      throw new Error(`Standings API error: ${JSON.stringify(standingsData.errors)}`);
+    const responses = await Promise.all(fetches);
+    const fixturesRes = responses[0];
+
+    if (!fixturesRes.ok) {
+      throw new Error(`Fixtures API HTTP ${fixturesRes.status}`);
     }
+
+    const fixturesData = await fixturesRes.json();
     if (fixturesData.errors && Object.keys(fixturesData.errors).length > 0) {
       throw new Error(`Fixtures API error: ${JSON.stringify(fixturesData.errors)}`);
     }
 
-    // Parse Standings
+    if (needStandings) {
+      const standingsRes = responses[1];
+      if (!standingsRes.ok) {
+        throw new Error(`Standings API HTTP ${standingsRes.status}`);
+      }
+      standingsData = await standingsRes.json();
+      if (standingsData.errors && Object.keys(standingsData.errors).length > 0) {
+        throw new Error(`Standings API error: ${JSON.stringify(standingsData.errors)}`);
+      }
+    }
+
+    // Parse Standings — use cache if available, otherwise parse fresh
     let groups: Group[] = [];
-    const apiStandingsResponse = standingsData.response;
+    const apiStandingsResponse = standingsData?.response;
     
     if (apiStandingsResponse && apiStandingsResponse.length > 0) {
       const apiGroups = apiStandingsResponse[0].league.standings;
@@ -473,6 +489,11 @@ export async function GET(request: Request) {
         .filter((g: Group) => g.letter.length === 1 && g.letter >= 'A' && g.letter <= 'L');
 
       groups.sort((a, b) => a.letter.localeCompare(b.letter));
+      // Save to long-lived standings cache
+      standingsCache = { timestamp: now, groups: JSON.parse(JSON.stringify(groups)) };
+    } else if (standingsCache) {
+      // Use cached standings (deep copy so dynamic adjustment doesn't mutate cache)
+      groups = JSON.parse(JSON.stringify(standingsCache.groups));
     } else {
       groups = mockWorldCupGroups;
     }
@@ -525,16 +546,23 @@ export async function GET(request: Request) {
       fixtures = mockWorldCupFixtures;
     }
 
-    // Pre-fetch events: live matches always, FT matches from permanent cache, 1 uncached FT per cycle
+    // Events: apply permanent cache for FT, fetch live every 180s, 1 uncached FT per cycle
     if (!isMockKey && fixtures.length > 0) {
       const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P', 'INT', 'BT', 'LIVE'].includes(s);
       const allStarted = fixtures.filter(f => f.status.short === 'FT' || isLive(f.status.short));
+      const needEventsFetch = (now - liveEventsTimestamp) > EVENTS_CACHE_TTL;
 
-      // Apply permanent cache for FT matches
+      // Apply permanent cache for FT matches, apply last-fetched for live
       const toFetch: Fixture[] = [];
       for (const fix of allStarted) {
         if (isLive(fix.status.short)) {
-          toFetch.push(fix);
+          if (eventCache[fix.id]) {
+            const cached = eventCache[fix.id];
+            if (cached.events.length > 0) fix.events = cached.events;
+            if (cached.statistics.length > 0) fix.statistics = cached.statistics;
+            if (cached.substitutions.length > 0) fix.substitutions = cached.substitutions;
+          }
+          if (needEventsFetch) toFetch.push(fix);
         } else if (eventCache[fix.id]) {
           const cached = eventCache[fix.id];
           if (cached.events.length > 0) fix.events = cached.events;
@@ -545,12 +573,12 @@ export async function GET(request: Request) {
         }
       }
 
-      // Only fetch live matches + 1 uncached FT match per cycle (saves API calls)
+      // Only fetch live matches (every 180s) + 1 uncached FT per cycle
       if (toFetch.length > 0) {
         const liveOnes = toFetch.filter(f => isLive(f.status.short));
         const ftOnes = toFetch.filter(f => !isLive(f.status.short));
         const batch = [...liveOnes, ...ftOnes.slice(0, 1)];
-        console.log(`[API]: Fetching events for ${batch.length}/${uncached.length} uncached matches (${Object.keys(eventCache).length} cached).`);
+        console.log(`[API]: Fetching events for ${batch.length}/${toFetch.length} matches (${Object.keys(eventCache).length} cached).`);
         {
           const results = await Promise.allSettled(
             batch.map(async (fix) => {
@@ -622,6 +650,7 @@ export async function GET(request: Request) {
               }
             }
           }
+          if (liveOnes.length > 0) liveEventsTimestamp = now;
         }
       }
     }
