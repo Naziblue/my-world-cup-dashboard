@@ -24,10 +24,13 @@ html, body {
 }
 
 body {
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(106, 13, 173, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(0, 245, 212, 0.02) 0%, transparent 40%);
+    radial-gradient(circle at 90% 80%, rgba(0, 245, 212, 0.02) 0%, transparent 40%),
+    url('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=1920&q=30&auto=format');
   background-attachment: fixed;
+  background-size: cover;
+  background-blend-mode: soft-light;
 }
 
 /* Custom scrollbars */

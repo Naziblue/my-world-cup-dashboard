@@ -171,18 +171,27 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 md:py-8 text-white font-sans">
-      {/* Title Header */}
-      <header className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center border-b border-pitch-border pb-5 text-start">
-        <h1 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white flex items-center gap-3">
-          <img
-            src="/fifa-logo.png"
-            alt="FIFA World Cup 2026"
-            className="h-10 md:h-11 w-auto shrink-0 rounded-lg"
-          />
-          {t('FIFA World Cup 2026', lang)}
-        </h1>
+      {/* Hero Banner with stadium image */}
+      <header
+        className="mb-6 relative rounded-2xl overflow-hidden"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1400&q=80&auto=format')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-deep-navy/95 via-deep-navy/85 to-deep-navy/75" />
+        <div className="relative flex flex-col gap-4 md:flex-row md:justify-between md:items-center px-6 py-5">
+          <h1 className="text-2xl md:text-[1.75rem] font-semibold tracking-tight text-white flex items-center gap-3">
+            <img
+              src="/fifa-logo.png"
+              alt="FIFA World Cup 2026"
+              className="h-10 md:h-11 w-auto shrink-0 rounded-lg"
+            />
+            {t('FIFA World Cup 2026', lang)}
+          </h1>
 
-        <div className="flex gap-3 items-center shrink-0">
+          <div className="flex gap-3 items-center shrink-0">
           <button 
             onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
             className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-stadium-indigo border border-pitch-border text-stadium-gray hover:text-white hover:border-cyber-orchid/30 transition-colors cursor-pointer"
@@ -203,6 +212,7 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 text-xs bg-volt-yellow/10 text-volt-yellow px-3.5 py-2 rounded-full border border-volt-yellow/20 font-bold uppercase tracking-wider">
             <span className="w-2 h-2 rounded-full bg-volt-yellow animate-pulse"></span>
             {t('Live Standings', lang)}
+          </div>
           </div>
         </div>
       </header>
@@ -403,7 +413,10 @@ export default function Home() {
 
             {activeTab === 'info' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-stadium-indigo border border-pitch-border rounded-3xl p-6 shadow-2xl text-start">
+                <div className="relative border border-pitch-border rounded-3xl p-6 shadow-2xl text-start overflow-hidden">
+                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600&q=70&auto=format')` }} />
+                  <div className="absolute inset-0 bg-stadium-indigo/90" />
+                  <div className="relative">
                   <h3 className="text-base font-bold text-white mb-4 pb-3 border-b border-pitch-border flex items-center gap-2">
                     <Users size={16} className="text-neon-teal" />
                     {t('48-Team Format Rules', lang)}
@@ -417,9 +430,13 @@ export default function Home() {
                     <li className="flex gap-2 leading-relaxed"><span className="text-neon-teal font-bold shrink-0">✓</span> <span>{t('The 8 best third-placed teams qualify for the Round of 32 knockout stage.', lang)}</span></li>
                     <li className="flex gap-2 leading-relaxed"><span className="text-neon-teal font-bold shrink-0">✓</span> <span>{t('Group stage matches do not have extra time; draws award 1 point.', lang)}</span></li>
                   </ul>
+                  </div>
                 </div>
 
-                <div className="bg-stadium-indigo border border-pitch-border rounded-3xl p-6 shadow-2xl text-start">
+                <div className="relative border border-pitch-border rounded-3xl p-6 shadow-2xl text-start overflow-hidden">
+                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=600&q=70&auto=format')` }} />
+                  <div className="absolute inset-0 bg-stadium-indigo/90" />
+                  <div className="relative">
                   <h3 className="text-base font-bold text-white mb-4 pb-3 border-b border-pitch-border flex items-center gap-2">
                     <Tv size={16} className="text-neon-teal" />
                     {t('Tournament Venues', lang)}
@@ -447,9 +464,13 @@ export default function Home() {
                       </span>
                     </li>
                   </ul>
+                  </div>
                 </div>
 
-                <div className="bg-stadium-indigo border border-pitch-border rounded-3xl p-6 shadow-2xl text-start">
+                <div className="relative border border-pitch-border rounded-3xl p-6 shadow-2xl text-start overflow-hidden">
+                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=600&q=70&auto=format')` }} />
+                  <div className="absolute inset-0 bg-stadium-indigo/90" />
+                  <div className="relative">
                   <h3 className="text-base font-bold text-white mb-4 pb-3 border-b border-pitch-border flex items-center gap-2">
                     <Play size={16} className="text-neon-teal" />
                     {t('Live Schedule Context', lang)}
@@ -461,6 +482,7 @@ export default function Home() {
                     <li className="flex gap-2 leading-relaxed"><span className="text-neon-teal font-bold shrink-0">✓</span> <span>{t('Group matches are played concurrently within groups for final matchday fairness.', lang)}</span></li>
                     <li className="flex gap-2 leading-relaxed"><span className="text-neon-teal font-bold shrink-0">✓</span> <span>{t('Standings update immediately in real-time as goals are scored.', lang)}</span></li>
                   </ul>
+                  </div>
                 </div>
               </div>
             )}
