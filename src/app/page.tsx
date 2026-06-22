@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Group, StandingsResponse } from '@/types';
 import GroupTable from '@/components/GroupTable';
@@ -28,10 +28,14 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'groups' | 'third-place' | 'bracket' | 'info'>('groups');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [nextRefreshSeconds, setNextRefreshSeconds] = useState<number>(15);
+  const [nextRefreshSeconds, setNextRefreshSeconds] = useState<number>(5);
   const [lang, setLang] = useState<'en' | 'fa'>('en');
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchData = async (isSilent = false) => {
+  const LIVE_INTERVAL = 5;
+  const COOLDOWN_INTERVAL = 1800; // 30 minutes
+
+  const fetchData = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     setError(null);
     try {
@@ -52,25 +56,79 @@ export default function Home() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  // 15-second background auto-fetch timer
+  // Smart polling: 5s during operational window, 30min cooldown outside
   useEffect(() => {
-    const timer = setInterval(() => {
-      setNextRefreshSeconds((prev) => {
+    if (!data?.fixtures) return;
+
+    const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
+    const isMatchFinished = (s: string) => s === 'FT';
+
+    const computeInterval = (): number => {
+      const now = Date.now();
+      const localToday = new Date().toDateString();
+
+      const todaysFixtures = data.fixtures.filter(f => {
+        if (isMatchLive(f.status.short)) return true;
+        return new Date(f.date).toDateString() === localToday;
+      });
+
+      if (todaysFixtures.length === 0) return COOLDOWN_INTERVAL;
+
+      const hasLive = todaysFixtures.some(f => isMatchLive(f.status.short));
+      if (hasLive) return LIVE_INTERVAL;
+
+      const allFinished = todaysFixtures.every(f => isMatchFinished(f.status.short));
+      if (allFinished) return COOLDOWN_INTERVAL;
+
+      // Operational window: first kickoff → last kickoff + 3h
+      const kickoffs = todaysFixtures
+        .filter(f => !isMatchFinished(f.status.short))
+        .map(f => new Date(f.date).getTime());
+
+      if (kickoffs.length === 0) return COOLDOWN_INTERVAL;
+
+      const firstKickoff = Math.min(...kickoffs);
+      const lastKickoff = Math.max(...kickoffs);
+      const windowEnd = lastKickoff + 3 * 3600000;
+
+      if (now < firstKickoff) {
+        // Pre-window: sleep until first kickoff (capped at cooldown)
+        const secsUntil = Math.ceil((firstKickoff - now) / 1000);
+        return Math.min(secsUntil, COOLDOWN_INTERVAL);
+      }
+
+      if (now >= firstKickoff && now <= windowEnd) {
+        return LIVE_INTERVAL;
+      }
+
+      return COOLDOWN_INTERVAL;
+    };
+
+    const intervalSecs = computeInterval();
+    setNextRefreshSeconds(intervalSecs);
+
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      setNextRefreshSeconds(prev => {
         if (prev <= 1) {
           fetchData(true);
-          return 15;
+          return intervalSecs;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [data, fetchData]);
 
   // Set document dir & lang dynamically
   useEffect(() => {
@@ -81,7 +139,6 @@ export default function Home() {
   const handleRefresh = () => {
     setRefreshing(true);
     fetchData(true);
-    setNextRefreshSeconds(15);
   };
 
   return (
