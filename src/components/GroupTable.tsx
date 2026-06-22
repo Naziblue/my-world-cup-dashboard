@@ -13,9 +13,10 @@ interface GroupTableProps {
   lang: 'en' | 'fa';
   pinnedTeams?: string[];
   onTogglePin?: (code: string) => void;
+  onTeamClick?: (team: Team) => void;
 }
 
-export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin }: GroupTableProps) {
+export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin, onTeamClick }: GroupTableProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -174,10 +175,20 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                       </td>
                       <td className="py-2 px-1 text-start">
                         <div className="flex items-center gap-1.5 font-bold text-slate-100">
-                          <span className="text-base leading-none" role="img" aria-label={`${team.name} Flag`}>
+                          <span
+                            className={`text-base leading-none ${onTeamClick ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+                            role="img"
+                            aria-label={`${team.name} Flag`}
+                            onClick={onTeamClick ? (e) => { e.stopPropagation(); onTeamClick(team); } : undefined}
+                          >
                             {team.flag}
                           </span>
-                          <span className="truncate max-w-[90px]">{translateTeam(team.name, lang)}</span>
+                          <span
+                            className={`truncate max-w-[90px] ${onTeamClick ? 'cursor-pointer hover:text-cyber-orchid transition-colors' : ''}`}
+                            onClick={onTeamClick ? (e) => { e.stopPropagation(); onTeamClick(team); } : undefined}
+                          >
+                            {translateTeam(team.name, lang)}
+                          </span>
                           <span className="text-[9px] text-stadium-gray/80 font-normal">{team.code}</span>
                           {rank === 1 && <Trophy size={10} className="text-volt-yellow shrink-0" />}
                           {onTogglePin && (

@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Group, StandingsResponse } from '@/types';
+import { Group, Team, StandingsResponse } from '@/types';
 import GroupTable from '@/components/GroupTable';
 import ThirdPlaceTable from '@/components/ThirdPlaceTable';
 import LiveMatches from '@/components/LiveMatches';
 import KnockoutBracket from '@/components/KnockoutBracket';
+import TeamDetailDrawer from '@/components/TeamDetailDrawer';
 import {
   Trophy,
   Search,
@@ -32,6 +33,7 @@ export default function Home() {
   const [nextRefreshSeconds, setNextRefreshSeconds] = useState<number>(5);
   const [lang, setLang] = useState<'en' | 'fa'>('en');
   const [pinnedTeams, setPinnedTeams] = useState<string[]>([]);
+  const [drawerTeam, setDrawerTeam] = useState<{ team: Team; group: Group } | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load pinned teams from localStorage on mount
@@ -40,6 +42,10 @@ export default function Home() {
       const stored = localStorage.getItem('wc2026_pinned_teams');
       if (stored) setPinnedTeams(JSON.parse(stored));
     } catch {}
+  }, []);
+
+  const openTeamDetail = useCallback((team: Team, group: Group) => {
+    setDrawerTeam({ team, group });
   }, []);
 
   const togglePin = useCallback((code: string) => {
@@ -267,15 +273,29 @@ export default function Home() {
       {/* Main Content Area */}
       <AnimatePresence mode="wait">
         {loading ? (
-          <motion.div 
+          <motion.div
             key="loading"
-            className="flex flex-col items-center justify-center min-h-[400px] gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="w-12 h-12 border-4 border-electric-purple/20 border-t-electric-purple rounded-full animate-spin"></div>
-            <div className="text-xs uppercase font-bold tracking-widest text-stadium-gray">{t('RETRIEVING LIVE STANDINGS...', lang)}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-stadium-indigo border border-pitch-border rounded-2xl p-5 h-[310px] animate-pulse">
+                  <div className="h-5 w-24 bg-pitch-border/50 rounded mb-4" />
+                  <div className="space-y-3 mt-6">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <div key={j} className="flex items-center gap-3">
+                        <div className="w-5 h-5 bg-pitch-border/40 rounded-full shrink-0" />
+                        <div className="h-3.5 flex-1 bg-pitch-border/40 rounded" />
+                        <div className="h-3.5 w-8 bg-pitch-border/30 rounded" />
+                        <div className="h-3.5 w-8 bg-pitch-border/30 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </motion.div>
         ) : error ? (
           <motion.div 
@@ -346,6 +366,7 @@ export default function Home() {
                       lang={lang}
                       pinnedTeams={pinnedTeams}
                       onTogglePin={togglePin}
+                      onTeamClick={(team) => openTeamDetail(team, group)}
                     />
                   ))}
                 </div>
@@ -431,6 +452,17 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Team Detail Drawer */}
+      <TeamDetailDrawer
+        team={drawerTeam?.team ?? null}
+        group={drawerTeam?.group ?? null}
+        fixtures={data?.fixtures ?? []}
+        lang={lang}
+        isPinned={drawerTeam ? pinnedTeams.includes(drawerTeam.team.code) : false}
+        onTogglePin={togglePin}
+        onClose={() => setDrawerTeam(null)}
+      />
     </main>
   );
 }
