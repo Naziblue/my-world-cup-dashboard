@@ -372,6 +372,9 @@ function getTeamMetadata(name: string) {
   return { code, flag: '🏳️' };
 }
 
+// Persistent event cache for finished matches (events never change once FT)
+const eventCache: Record<number, { events: any[]; statistics: any[]; substitutions: any[] }> = {};
+
 // Shared in-memory cache for all requests (15s duration) to protect external API rate limits
 let cachedResponse: {
   timestamp: number;
@@ -522,88 +525,103 @@ export async function GET(request: Request) {
       fixtures = mockWorldCupFixtures;
     }
 
-    // Fetch events + statistics for live matches and the most recent finished match (hero candidate)
+    // Pre-fetch events for all started matches. Uses persistent cache for FT matches.
     if (!isMockKey && fixtures.length > 0) {
       const isLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
-      const liveFixtures = fixtures.filter(f => isLive(f.status.short));
-      const recentFinished = fixtures
-        .filter(f => f.status.short === 'FT')
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 1);
-      const heroTargets = [...liveFixtures, ...recentFinished];
+      const allStarted = fixtures.filter(f => f.status.short === 'FT' || isLive(f.status.short));
 
-      if (heroTargets.length > 0) {
-        console.log(`[API Secure Backend]: Fetching events/stats for ${heroTargets.length} hero-target fixture(s).`);
-        const detailResults = await Promise.allSettled(
-          heroTargets.map(async (fix) => {
-            const [eventsRes, statsRes] = await Promise.all([
-              fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fix.id}`, {
-                headers: { 'x-apisports-key': apiKey! },
-                next: { revalidate: 15 },
-              }),
-              fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fix.id}`, {
-                headers: { 'x-apisports-key': apiKey! },
-                next: { revalidate: 15 },
-              }),
-            ]);
+      // Apply cached data first, collect uncached IDs
+      const uncached: Fixture[] = [];
+      for (const fix of allStarted) {
+        if (eventCache[fix.id]) {
+          const cached = eventCache[fix.id];
+          if (cached.events.length > 0) fix.events = cached.events;
+          if (cached.statistics.length > 0) fix.statistics = cached.statistics;
+          if (cached.substitutions.length > 0) fix.substitutions = cached.substitutions;
+        } else {
+          uncached.push(fix);
+        }
+      }
 
-            const [eventsData, statsData] = await Promise.all([
-              eventsRes.ok ? eventsRes.json() : null,
-              statsRes.ok ? statsRes.json() : null,
-            ]);
+      // Fetch up to 5 uncached per request (most recent first). Builds up over auto-refreshes.
+      if (uncached.length > 0) {
+        uncached.sort((a, b) => {
+          const aLive = isLive(a.status.short) ? 0 : 1;
+          const bLive = isLive(b.status.short) ? 0 : 1;
+          if (aLive !== bLive) return aLive - bLive;
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+        const batch = uncached.slice(0, 5);
+        console.log(`[API]: Fetching events for ${batch.length}/${uncached.length} uncached matches (${Object.keys(eventCache).length} cached).`);
+        {
+          const results = await Promise.allSettled(
+            batch.map(async (fix) => {
+              const [eventsRes, statsRes] = await Promise.all([
+                fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${fix.id}`, {
+                  headers: { 'x-apisports-key': apiKey! },
+                }),
+                fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fix.id}`, {
+                  headers: { 'x-apisports-key': apiKey! },
+                }),
+              ]);
+              const [eventsData, statsData] = await Promise.all([
+                eventsRes.ok ? eventsRes.json() : null,
+                statsRes.ok ? statsRes.json() : null,
+              ]);
 
-            const events: MatchEvent[] = [];
-            const substitutions: { minute: number; team: 'home' | 'away'; playerIn: string; playerOut: string }[] = [];
+              const homeTeamId = apiFixturesResponse?.find((a: any) => a.fixture.id === fix.id)?.teams?.home?.id;
+              const events: MatchEvent[] = [];
+              const substitutions: { minute: number; team: 'home' | 'away'; playerIn: string; playerOut: string }[] = [];
 
-            if (eventsData?.response) {
-              for (const ev of eventsData.response) {
-                const side: 'home' | 'away' = ev.team.id === (apiFixturesResponse?.find((a: any) => a.fixture.id === fix.id)?.teams?.home?.id)
-                  ? 'home' : 'away';
-                const evType = ev.type?.toLowerCase() ?? '';
-                const detail = ev.detail?.toLowerCase() ?? '';
-
-                if (evType === 'goal' || detail.includes('goal')) {
-                  events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'goal', player: ev.player?.name ?? '?', assist: ev.assist?.name || undefined });
-                } else if (evType === 'card' && detail.includes('red')) {
-                  events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'red-card', player: ev.player?.name ?? '?' });
-                } else if (evType === 'card' && detail.includes('yellow')) {
-                  events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'yellow-card', player: ev.player?.name ?? '?' });
-                } else if (evType === 'subst') {
-                  substitutions.push({ minute: ev.time.elapsed ?? 0, team: side, playerIn: ev.assist?.name ?? '?', playerOut: ev.player?.name ?? '?' });
+              if (eventsData?.response) {
+                for (const ev of eventsData.response) {
+                  const side: 'home' | 'away' = ev.team.id === homeTeamId ? 'home' : 'away';
+                  const evType = ev.type?.toLowerCase() ?? '';
+                  const detail = ev.detail?.toLowerCase() ?? '';
+                  if (evType === 'goal' || detail.includes('goal')) {
+                    events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'goal', player: ev.player?.name ?? '?', assist: ev.assist?.name || undefined });
+                  } else if (evType === 'card' && detail.includes('red')) {
+                    events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'red-card', player: ev.player?.name ?? '?' });
+                  } else if (evType === 'card' && detail.includes('yellow')) {
+                    events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'yellow-card', player: ev.player?.name ?? '?' });
+                  } else if (evType === 'subst') {
+                    substitutions.push({ minute: ev.time.elapsed ?? 0, team: side, playerIn: ev.assist?.name ?? '?', playerOut: ev.player?.name ?? '?' });
+                  }
                 }
               }
-            }
 
-            const statistics: MatchStatistic[] = [];
-            if (statsData?.response && statsData.response.length >= 2) {
-              const homeStats = statsData.response[0]?.statistics ?? [];
-              const awayStats = statsData.response[1]?.statistics ?? [];
-              const wantedStats = ['Ball Possession', 'Shots on Goal', 'Total Shots', 'Fouls', 'Corner Kicks'];
-              for (const label of wantedStats) {
-                const hStat = homeStats.find((s: any) => s.type === label);
-                const aStat = awayStats.find((s: any) => s.type === label);
-                if (hStat && aStat) {
-                  statistics.push({
-                    label: label === 'Ball Possession' ? 'Possession' : label === 'Shots on Goal' ? 'Shots on Target' : label,
-                    home: parseInt(String(hStat.value ?? '0').replace('%', '')) || 0,
-                    away: parseInt(String(aStat.value ?? '0').replace('%', '')) || 0,
-                  });
+              const statistics: MatchStatistic[] = [];
+              if (statsData?.response && statsData.response.length >= 2) {
+                const homeStats = statsData.response[0]?.statistics ?? [];
+                const awayStats = statsData.response[1]?.statistics ?? [];
+                for (const label of ['Ball Possession', 'Shots on Goal', 'Total Shots', 'Fouls', 'Corner Kicks']) {
+                  const hStat = homeStats.find((s: any) => s.type === label);
+                  const aStat = awayStats.find((s: any) => s.type === label);
+                  if (hStat && aStat) {
+                    statistics.push({
+                      label: label === 'Ball Possession' ? 'Possession' : label === 'Shots on Goal' ? 'Shots on Target' : label,
+                      home: parseInt(String(hStat.value ?? '0').replace('%', '')) || 0,
+                      away: parseInt(String(aStat.value ?? '0').replace('%', '')) || 0,
+                    });
+                  }
                 }
               }
-            }
 
-            return { fixtureId: fix.id, events, statistics, substitutions };
-          })
-        );
+              return { fixtureId: fix.id, events, statistics, substitutions };
+            })
+          );
 
-        for (const result of detailResults) {
-          if (result.status === 'fulfilled') {
-            const { fixtureId, events, statistics, substitutions } = result.value;
-            const fix = fixtures.find(f => f.id === fixtureId);
-            if (fix) {
-              if (events.length > 0) fix.events = events;
-              if (statistics.length > 0) fix.statistics = statistics;
-              if (substitutions.length > 0) fix.substitutions = substitutions;
+          for (const result of results) {
+            if (result.status === 'fulfilled') {
+              const { fixtureId, events, statistics, substitutions } = result.value;
+              // Persist in cache (FT events never change)
+              eventCache[fixtureId] = { events, statistics, substitutions };
+              const fix = fixtures.find(f => f.id === fixtureId);
+              if (fix) {
+                if (events.length > 0) fix.events = events;
+                if (statistics.length > 0) fix.statistics = statistics;
+                if (substitutions.length > 0) fix.substitutions = substitutions;
+              }
             }
           }
         }
