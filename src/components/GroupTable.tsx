@@ -146,14 +146,16 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
 
                   const isPinned = pinnedTeams.includes(team.code);
 
-                  const zoneBorder = rank <= 2
-                    ? (isRTL ? 'border-r-2 border-r-emerald-500' : 'border-l-2 border-l-emerald-500')
-                    : '';
+                  const zoneBg = rank <= 2
+                    ? 'rgba(16, 185, 129, 0.08)'
+                    : rank === 3
+                    ? 'rgba(245, 158, 11, 0.08)'
+                    : undefined;
 
                   return (
                     <motion.tr
                       key={team.code}
-                      className={`transition-colors hover:bg-slate-800/10 ${zoneBorder}`}
+                      className="transition-colors hover:bg-slate-800/10"
                       custom={idx}
                       variants={tableRowVariants}
                       initial="hidden"
@@ -163,10 +165,7 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                           ? 'rgba(106, 13, 173, 0.15)'
                           : isPinned
                           ? 'rgba(234, 179, 8, 0.06)'
-                          : undefined,
-                        ...(rank === 3 ? {
-                          [isRTL ? 'borderRight' : 'borderLeft']: '2px dashed rgb(245, 158, 11)',
-                        } : {}),
+                          : zoneBg,
                       }}
                     >
                       <td className={`py-2 px-1 text-center font-bold font-mono ${rankColor}`}>
