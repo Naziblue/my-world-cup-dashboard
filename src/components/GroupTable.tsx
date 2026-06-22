@@ -73,7 +73,7 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
 
   return (
     <motion.div 
-      className="h-[310px] w-full relative cursor-pointer select-none"
+      className="h-[265px] w-full relative cursor-pointer select-none"
       variants={cardVariants}
       initial="hidden"
       animate="visible"
@@ -198,18 +198,6 @@ export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedT
                           </span>
                           <span className="text-[9px] text-stadium-gray/80 font-normal">{team.code}</span>
                           {rank === 1 && <Trophy size={10} className="text-volt-yellow shrink-0" />}
-                          {onTogglePin && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onTogglePin(team.code); }}
-                              className="shrink-0 ml-auto cursor-pointer hover:scale-110 transition-transform"
-                              title={isPinned ? 'Unpin team' : 'Pin team'}
-                            >
-                              <Star
-                                size={11}
-                                className={isPinned ? 'text-volt-yellow fill-volt-yellow' : 'text-stadium-gray/40 hover:text-volt-yellow/60'}
-                              />
-                            </button>
-                          )}
                         </div>
                       </td>
                       <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.played, lang)}</td>
