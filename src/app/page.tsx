@@ -171,15 +171,14 @@ export default function Home() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 md:py-8 text-white font-sans">
-      {/* Hero Banner — FIFA-style dark geometric header */}
+      {/* Hero Banner — geometric overlay */}
       <header className="mb-6 relative rounded-2xl overflow-hidden">
-        {/* Dark geometric background with angular slashes */}
         <div className="absolute inset-0 bg-stadium-indigo" />
+        {/* Geometric angular slashes */}
         <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1400 200">
-          <polygon points="0,0 1400,0 1400,200 0,200" fill="var(--color-stadium-indigo)" />
-          <polygon points="600,0 1400,0 1400,200 800,200" fill="rgba(0,0,0,0.25)" />
-          <polygon points="900,0 1100,0 700,200 500,200" fill="rgba(0,0,0,0.15)" />
-          <polygon points="1100,0 1250,0 950,200 800,200" fill="rgba(0,0,0,0.1)" />
+          <polygon points="600,0 1400,0 1400,200 800,200" fill="rgba(0,0,0,0.2)" />
+          <polygon points="900,0 1100,0 700,200 500,200" fill="rgba(0,0,0,0.12)" />
+          <polygon points="1100,0 1250,0 950,200 800,200" fill="rgba(0,0,0,0.08)" />
         </svg>
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-electric-purple/5" />
 
