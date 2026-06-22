@@ -7,17 +7,18 @@ import GroupTable from '@/components/GroupTable';
 import ThirdPlaceTable from '@/components/ThirdPlaceTable';
 import LiveMatches from '@/components/LiveMatches';
 import KnockoutBracket from '@/components/KnockoutBracket';
-import { 
-  Trophy, 
-  Search, 
-  LayoutGrid, 
-  Award, 
-  Info, 
-  Globe, 
-  Play, 
-  RefreshCw, 
-  Users, 
-  Tv 
+import {
+  Trophy,
+  Search,
+  LayoutGrid,
+  Award,
+  Info,
+  Globe,
+  Play,
+  RefreshCw,
+  Users,
+  Tv,
+  Star
 } from 'lucide-react';
 import { t, translateTeam, formatNumber } from '@/utils/i18n';
 
@@ -30,7 +31,26 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [nextRefreshSeconds, setNextRefreshSeconds] = useState<number>(5);
   const [lang, setLang] = useState<'en' | 'fa'>('en');
+  const [pinnedTeams, setPinnedTeams] = useState<string[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load pinned teams from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('wc2026_pinned_teams');
+      if (stored) setPinnedTeams(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  const togglePin = useCallback((code: string) => {
+    setPinnedTeams(prev => {
+      const next = prev.includes(code)
+        ? prev.filter(c => c !== code)
+        : [...prev, code];
+      try { localStorage.setItem('wc2026_pinned_teams', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
 
   const LIVE_INTERVAL = 5;
   const COOLDOWN_INTERVAL = 1800; // 30 minutes
@@ -176,7 +196,7 @@ export default function Home() {
 
       {/* Live Matches & Scores Widget */}
       {data && data.fixtures && data.fixtures.length > 0 && (
-        <LiveMatches fixtures={data.fixtures} nextRefreshSeconds={nextRefreshSeconds} lang={lang} />
+        <LiveMatches fixtures={data.fixtures} nextRefreshSeconds={nextRefreshSeconds} lang={lang} pinnedTeams={pinnedTeams} />
       )}
 
       {/* Control Bar (Tabs & Search) */}
@@ -231,9 +251,9 @@ export default function Home() {
         {activeTab !== 'info' && activeTab !== 'bracket' && (
           <div className="relative w-full sm:max-w-xs">
             <Search size={14} className={`absolute top-1/2 -translate-y-1/2 text-stadium-gray pointer-events-none ${lang === 'fa' ? 'right-3' : 'left-3'}`} />
-            <input 
-              type="text" 
-              placeholder={t('Search team or code (e.g. USA, MEX)...', lang)} 
+            <input
+              type="text"
+              placeholder={t('Search: team, code, "group A", or "live"...', lang)}
               className={`w-full bg-deep-navy border border-pitch-border rounded-xl py-2.5 text-xs md:text-sm text-white placeholder-stadium-gray/50 focus:outline-none focus:border-cyber-orchid/50 focus:ring-1 focus:ring-cyber-orchid/30 transition-all ${
                 lang === 'fa' ? 'pr-9 pl-4 text-right' : 'pl-9 pr-4 text-left'
               }`}
@@ -282,19 +302,55 @@ export default function Home() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
           >
-            {activeTab === 'groups' && data && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {data.groups.map((group) => (
-                  <GroupTable 
-                    key={group.letter} 
-                    group={group} 
-                    searchQuery={searchQuery}
-                    fixtures={data.fixtures}
-                    lang={lang}
-                  />
-                ))}
-              </div>
-            )}
+            {activeTab === 'groups' && data && (() => {
+              const q = searchQuery.trim().toLowerCase();
+
+              // Smart search: "group X" isolator
+              const groupMatch = q.match(/^group\s+([a-l])$/i);
+              // Smart search: "live" isolator
+              const liveFilter = q === 'live';
+
+              let filtered = data.groups;
+
+              if (groupMatch) {
+                const letter = groupMatch[1].toUpperCase();
+                filtered = data.groups.filter(g => g.letter === letter);
+              } else if (liveFilter) {
+                const liveTeams = new Set(
+                  data.fixtures
+                    .filter(f => ['1H', '2H', 'HT', 'ET', 'P'].includes(f.status.short))
+                    .flatMap(f => [f.teams.home.name.toLowerCase(), f.teams.away.name.toLowerCase()])
+                );
+                filtered = data.groups.filter(g =>
+                  g.teams.some(t => liveTeams.has(t.name.toLowerCase()))
+                );
+              }
+
+              // Reorder: pinned groups first
+              const sorted = [...filtered].sort((a, b) => {
+                const aHasPin = a.teams.some(t => pinnedTeams.includes(t.code));
+                const bHasPin = b.teams.some(t => pinnedTeams.includes(t.code));
+                if (aHasPin && !bHasPin) return -1;
+                if (!aHasPin && bHasPin) return 1;
+                return a.letter.localeCompare(b.letter);
+              });
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {sorted.map((group) => (
+                    <GroupTable
+                      key={group.letter}
+                      group={group}
+                      searchQuery={groupMatch || liveFilter ? '' : searchQuery}
+                      fixtures={data.fixtures}
+                      lang={lang}
+                      pinnedTeams={pinnedTeams}
+                      onTogglePin={togglePin}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
 
             {activeTab === 'third-place' && data && (
               <ThirdPlaceTable 

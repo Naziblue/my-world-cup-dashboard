@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Group, Team, Fixture } from '@/types';
-import { Trophy } from 'lucide-react';
+import { Trophy, Star } from 'lucide-react';
 import { t, translateTeam, formatNumber } from '@/utils/i18n';
 
 interface GroupTableProps {
@@ -11,9 +11,11 @@ interface GroupTableProps {
   searchQuery: string;
   fixtures: Fixture[];
   lang: 'en' | 'fa';
+  pinnedTeams?: string[];
+  onTogglePin?: (code: string) => void;
 }
 
-export default function GroupTable({ group, searchQuery, fixtures, lang }: GroupTableProps) {
+export default function GroupTable({ group, searchQuery, fixtures, lang, pinnedTeams = [], onTogglePin }: GroupTableProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -128,7 +130,7 @@ export default function GroupTable({ group, searchQuery, fixtures, lang }: Group
                 {group.teams.map((team, idx) => {
                   const rank = idx + 1;
                   let rankColor = 'text-stadium-gray';
-                  
+
                   if (rank <= 2) {
                     rankColor = 'text-neon-teal';
                   } else if (rank === 3) {
@@ -140,18 +142,31 @@ export default function GroupTable({ group, searchQuery, fixtures, lang }: Group
                     team.code.toLowerCase().includes(searchQuery.toLowerCase())
                   );
 
+                  const isPinned = pinnedTeams.includes(team.code);
+
+                  // Qualification zone border
+                  const zoneBorder = rank <= 2
+                    ? (isRTL ? 'border-r-2 border-r-emerald-500' : 'border-l-2 border-l-emerald-500')
+                    : rank === 3
+                    ? (isRTL ? 'border-r-2 border-r-amber-500 border-dashed' : 'border-l-2 border-l-amber-500 border-dashed')
+                    : '';
+
                   return (
-                    <motion.tr 
-                      key={team.code} 
-                      className="transition-colors hover:bg-slate-800/10"
+                    <motion.tr
+                      key={team.code}
+                      className={`transition-colors hover:bg-slate-800/10 ${zoneBorder}`}
                       custom={idx}
                       variants={tableRowVariants}
                       initial="hidden"
                       animate="visible"
                       style={{
-                        backgroundColor: isSearched ? 'rgba(106, 13, 173, 0.15)' : undefined,
-                        borderLeft: isRTL ? undefined : (isSearched ? '3px solid var(--color-electric-purple)' : undefined),
-                        borderRight: isRTL ? (isSearched ? '3px solid var(--color-electric-purple)' : undefined) : undefined,
+                        backgroundColor: isSearched
+                          ? 'rgba(106, 13, 173, 0.15)'
+                          : isPinned
+                          ? 'rgba(234, 179, 8, 0.06)'
+                          : undefined,
+                        borderLeftStyle: rank === 3 && !isRTL ? 'dashed' : undefined,
+                        borderRightStyle: rank === 3 && isRTL ? 'dashed' : undefined,
                       }}
                     >
                       <td className={`py-2 px-1 text-center font-bold font-mono ${rankColor}`}>
@@ -162,9 +177,21 @@ export default function GroupTable({ group, searchQuery, fixtures, lang }: Group
                           <span className="text-base leading-none" role="img" aria-label={`${team.name} Flag`}>
                             {team.flag}
                           </span>
-                          <span className="truncate max-w-[105px]">{translateTeam(team.name, lang)}</span>
+                          <span className="truncate max-w-[90px]">{translateTeam(team.name, lang)}</span>
                           <span className="text-[9px] text-stadium-gray/80 font-normal">{team.code}</span>
                           {rank === 1 && <Trophy size={10} className="text-volt-yellow shrink-0" />}
+                          {onTogglePin && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onTogglePin(team.code); }}
+                              className="shrink-0 ml-auto cursor-pointer hover:scale-110 transition-transform"
+                              title={isPinned ? 'Unpin team' : 'Pin team'}
+                            >
+                              <Star
+                                size={11}
+                                className={isPinned ? 'text-volt-yellow fill-volt-yellow' : 'text-stadium-gray/40 hover:text-volt-yellow/60'}
+                              />
+                            </button>
+                          )}
                         </div>
                       </td>
                       <td className="py-2 px-1 text-center font-mono text-stadium-gray">{formatNumber(team.played, lang)}</td>

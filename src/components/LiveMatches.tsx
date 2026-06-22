@@ -10,6 +10,7 @@ interface LiveMatchesProps {
   fixtures: Fixture[];
   nextRefreshSeconds: number;
   lang: 'en' | 'fa';
+  pinnedTeams?: string[];
 }
 
 const isMatchLive = (s: string) => ['1H', '2H', 'HT', 'ET', 'P'].includes(s);
@@ -272,8 +273,9 @@ function MatchHero({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
   );
 }
 
-function MatchCard({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
+function MatchCard({ fixture, lang, pinnedTeams = [] }: { fixture: Fixture; lang: 'en' | 'fa'; pinnedTeams?: string[] }) {
   const finished = isMatchFinished(fixture.status.short);
+  const hasPinnedTeam = pinnedTeams.includes(fixture.teams.home.code) || pinnedTeams.includes(fixture.teams.away.code);
 
   const formatKickoff = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -287,7 +289,7 @@ function MatchCard({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
         finished
           ? 'border-pitch-border/60 opacity-75'
           : 'border-pitch-border hover:border-cyber-orchid/30'
-      }`}
+      } ${hasPinnedTeam ? 'border-l-2 border-l-volt-yellow' : ''}`}
       whileHover={{ y: -2, scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
@@ -343,7 +345,7 @@ function MatchCard({ fixture, lang }: { fixture: Fixture; lang: 'en' | 'fa' }) {
   );
 }
 
-export default function LiveMatches({ fixtures, nextRefreshSeconds, lang }: LiveMatchesProps) {
+export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinnedTeams = [] }: LiveMatchesProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -444,7 +446,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang }: Live
                 </div>
               )}
               {scheduleUpcoming.map(fixture => (
-                <MatchCard key={fixture.id} fixture={fixture} lang={lang} />
+                <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} />
               ))}
               {scheduleUpcoming.length > 0 && scheduleFinished.length > 0 && (
                 <div className="shrink-0 self-stretch flex flex-col items-center justify-center gap-1 mx-1">
@@ -456,7 +458,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang }: Live
                 </div>
               )}
               {scheduleFinished.map(fixture => (
-                <MatchCard key={fixture.id} fixture={fixture} lang={lang} />
+                <MatchCard key={fixture.id} fixture={fixture} lang={lang} pinnedTeams={pinnedTeams} />
               ))}
             </div>
           )}
