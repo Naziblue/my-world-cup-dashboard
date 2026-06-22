@@ -25,7 +25,7 @@ html, body {
 
 body {
   background-image:
-    linear-gradient(rgba(11, 17, 30, 0.92), rgba(11, 17, 30, 0.92)),
+    linear-gradient(rgba(11, 17, 30, 0.77), rgba(11, 17, 30, 0.77)),
     url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1920&q=80&auto=format');
   background-attachment: fixed;
   background-size: cover;
