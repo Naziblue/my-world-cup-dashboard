@@ -98,6 +98,7 @@ const uiTranslations: Record<string, string> = {
   'Timeline': 'رویدادها',
   'Statistics': 'آمار',
   'Substitutions': 'تعویض‌ها',
+  'Disallowed': 'مردود',
   'Match Events': 'رویدادهای بازی',
   'UPCOMING': 'پیش رو',
   'FINISHED': 'پایان یافته',

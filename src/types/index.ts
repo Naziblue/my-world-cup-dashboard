@@ -43,6 +43,7 @@ export interface MatchEvent {
   type: 'goal' | 'red-card' | 'yellow-card';
   player: string;
   assist?: string;
+  disallowed?: boolean;
 }
 
 export interface MatchStatistic {

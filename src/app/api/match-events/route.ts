@@ -54,9 +54,17 @@ export async function GET(request: Request) {
         const side: 'home' | 'away' = ev.team.id === homeTeamId ? 'home' : 'away';
         const evType = ev.type?.toLowerCase() ?? '';
         const detail = ev.detail?.toLowerCase() ?? '';
+        const isDisallowedGoal = detail.includes('disallowed') || detail.includes('cancelled') || detail.includes('no goal');
 
-        if (evType === 'goal' || detail.includes('goal')) {
-          events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'goal', player: ev.player?.name ?? '?', assist: ev.assist?.name || undefined });
+        if (evType === 'goal' || detail.includes('goal') || (evType === 'var' && isDisallowedGoal)) {
+          events.push({
+            minute: ev.time.elapsed ?? 0,
+            team: side,
+            type: 'goal',
+            player: ev.player?.name ?? '?',
+            assist: ev.assist?.name || undefined,
+            disallowed: isDisallowedGoal
+          });
         } else if (evType === 'card' && detail.includes('red')) {
           events.push({ minute: ev.time.elapsed ?? 0, team: side, type: 'red-card', player: ev.player?.name ?? '?' });
         } else if (evType === 'card' && detail.includes('yellow')) {

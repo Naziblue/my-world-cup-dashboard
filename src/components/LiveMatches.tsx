@@ -447,7 +447,7 @@ function MatchHero({ fixture, lang, onClick, className = 'mb-4' }: { fixture: Fi
               />
               {/* Half-time marker */}
               <div className="absolute top-0 bottom-0 w-px bg-white/20" style={{ left: '50%' }} />
-              {/* Event markers */}
+               {/* Event markers */}
               {keyEvents.map((ev, i) => (
                 <div
                   key={i}
@@ -458,11 +458,21 @@ function MatchHero({ fixture, lang, onClick, className = 'mb-4' }: { fixture: Fi
                   }}
                 >
                   <span className="text-[10px] select-none leading-none flex items-center justify-center">
-                    {ev.type === 'goal' ? '⚽' : '🟥'}
+                    {ev.type === 'goal' ? (
+                      ev.disallowed ? (
+                        <span className="relative flex items-center justify-center">
+                          <span className="opacity-40">⚽</span>
+                          <span className="absolute text-red-500 font-bold text-[10px] select-none pointer-events-none">✕</span>
+                        </span>
+                      ) : '⚽'
+                    ) : '🟥'}
                   </span>
                   {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex items-center px-2 py-1 rounded-lg bg-deep-navy/95 border border-pitch-border/50 shadow-xl whitespace-nowrap z-20">
-                    <span className="text-[9px] font-bold text-white">{ev.player}</span>
+                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex items-center px-2 py-1 rounded-lg bg-deep-navy/95 border ${ev.disallowed ? 'border-red-500/80 shadow-red-500/20' : 'border-pitch-border/50'} shadow-xl whitespace-nowrap z-20`}>
+                    <span className={`text-[9px] font-bold ${ev.disallowed ? 'text-rose-400' : 'text-white'}`}>{ev.player}</span>
+                    {ev.disallowed && (
+                      <span className="text-[8px] font-bold text-rose-500/90 ml-1">({t('Disallowed', lang)})</span>
+                    )}
                     <span className="text-[9px] text-stadium-gray ml-1">{ev.minute}'</span>
                   </div>
                 </div>

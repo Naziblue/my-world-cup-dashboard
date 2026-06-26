@@ -29,8 +29,15 @@ function StatBar({ label, home, away }: { label: string; home: number; away: num
   );
 }
 
-const eventIcon = (kind: string) => {
-  if (kind === 'goal') return '⚽';
+const eventIcon = (kind: string, disallowed?: boolean) => {
+  if (kind === 'goal') {
+    return disallowed ? (
+      <span className="relative inline-flex items-center justify-center w-4 h-4">
+        <span className="opacity-40">⚽</span>
+        <span className="absolute text-rose-500 font-bold text-[10px] select-none pointer-events-none">✕</span>
+      </span>
+    ) : '⚽';
+  }
   if (kind === 'red-card') return '🟥';
   if (kind === 'yellow-card') return '🟨';
   if (kind === 'substitution') return '🔄';
@@ -43,6 +50,7 @@ type TimelineEntry = {
   kind: string;
   player: string;
   detail?: string;
+  disallowed?: boolean;
 };
 
 export default function MatchDetailModal({ fixture, lang, onClose }: MatchDetailModalProps) {
@@ -86,7 +94,7 @@ export default function MatchDetailModal({ fixture, lang, onClose }: MatchDetail
   }, [fixture]);
 
   const timeline: TimelineEntry[] = [
-    ...events.map(ev => ({ minute: ev.minute, team: ev.team, kind: ev.type, player: ev.player, detail: ev.assist })),
+    ...events.map(ev => ({ minute: ev.minute, team: ev.team, kind: ev.type, player: ev.player, detail: ev.assist, disallowed: ev.disallowed })),
     ...substitutions.map(sub => ({ minute: sub.minute, team: sub.team, kind: 'substitution', player: sub.playerIn, detail: sub.playerOut })),
   ].sort((a, b) => a.minute - b.minute);
 
@@ -197,15 +205,18 @@ export default function MatchDetailModal({ fixture, lang, onClose }: MatchDetail
                                   </span>
                                 ) : (
                                   <span className="flex items-center gap-1 text-[11px]">
-                                    <span className="font-semibold text-white">{entry.player}</span>
-                                    {entry.detail && <span className="text-stadium-gray/50 text-[9px]">({entry.detail})</span>}
+                                    <span className={`font-semibold ${entry.disallowed ? 'text-rose-500 line-through decoration-rose-500/50' : 'text-white'}`}>{entry.player}</span>
+                                    {entry.detail && <span className={`${entry.disallowed ? 'text-rose-500/70 line-through decoration-rose-500/30' : 'text-stadium-gray/50'} text-[9px]`}>({entry.detail})</span>}
+                                    {entry.disallowed && (
+                                      <span className="text-rose-500/80 text-[8px] font-bold italic ml-1">({t('Disallowed', lang)})</span>
+                                    )}
                                   </span>
                                 )}
-                                <span>{eventIcon(entry.kind)}</span>
+                                <span>{eventIcon(entry.kind, entry.disallowed)}</span>
                               </>
                             ) : (
                               <>
-                                <span>{eventIcon(entry.kind)}</span>
+                                <span>{eventIcon(entry.kind, entry.disallowed)}</span>
                                 {entry.kind === 'substitution' ? (
                                   <span className="flex items-center gap-1 text-[11px]">
                                     <span className="text-neon-teal font-bold">▲</span>
@@ -216,8 +227,11 @@ export default function MatchDetailModal({ fixture, lang, onClose }: MatchDetail
                                   </span>
                                 ) : (
                                   <span className="flex items-center gap-1 text-[11px]">
-                                    <span className="font-semibold text-white">{entry.player}</span>
-                                    {entry.detail && <span className="text-stadium-gray/50 text-[9px]">({entry.detail})</span>}
+                                    <span className={`font-semibold ${entry.disallowed ? 'text-rose-500 line-through decoration-rose-500/50' : 'text-white'}`}>{entry.player}</span>
+                                    {entry.detail && <span className={`${entry.disallowed ? 'text-rose-500/70 line-through decoration-rose-500/30' : 'text-stadium-gray/50'} text-[9px]`}>({entry.detail})</span>}
+                                    {entry.disallowed && (
+                                      <span className="text-rose-500/80 text-[8px] font-bold italic ml-1">({t('Disallowed', lang)})</span>
+                                    )}
                                   </span>
                                 )}
                               </>
