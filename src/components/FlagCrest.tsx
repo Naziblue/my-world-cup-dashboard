@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { getFlagUrl } from '@/utils/flags';
 
 interface FlagCrestProps {
@@ -21,10 +21,11 @@ const SIZES = {
 export default function FlagCrest({ code, fallbackEmoji, size = 'md', muted = false }: FlagCrestProps) {
   const s = SIZES[size];
   const flagUrl = getFlagUrl(code, s.imgW);
+  const [hasError, setHasError] = useState(false);
 
-  if (!flagUrl) {
-    return <span style={{ fontSize: s.inner * 0.7, opacity: muted ? 0.5 : 1 }}>{fallbackEmoji}</span>;
-  }
+  useEffect(() => {
+    setHasError(false);
+  }, [flagUrl]);
 
   return (
     <div
@@ -53,13 +54,29 @@ export default function FlagCrest({ code, fallbackEmoji, size = 'md', muted = fa
             background: muted ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)',
           }}
         >
-          <div
-            className="w-full h-full rounded-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url('${flagUrl}')`,
-              backgroundColor: '#334155',
-            }}
-          />
+          {!hasError && flagUrl ? (
+            <img
+              src={flagUrl}
+              alt={code}
+              onError={() => setHasError(true)}
+              className="w-full h-full rounded-full object-cover"
+              style={{
+                backgroundColor: '#334155',
+              }}
+            />
+          ) : (
+            <div
+              className="w-full h-full rounded-full flex items-center justify-center select-none"
+              style={{
+                backgroundColor: '#334155',
+                fontSize: s.inner * 0.65,
+                lineHeight: 1,
+                opacity: muted ? 0.6 : 1,
+              }}
+            >
+              {fallbackEmoji}
+            </div>
+          )}
         </div>
       </div>
     </div>

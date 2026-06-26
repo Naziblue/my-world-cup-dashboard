@@ -8,7 +8,8 @@ const FIFA_TO_ISO2: Record<string, string> = {
 };
 
 export function getFlagUrl(code: string, width = 640): string {
-  const iso = FIFA_TO_ISO2[code];
+  if (!code) return '';
+  const iso = FIFA_TO_ISO2[code.toUpperCase()];
   return iso ? `https://flagcdn.com/w${width}/${iso}.png` : '';
 }
 
@@ -64,5 +65,6 @@ const NATIONAL_COLORS: Record<string, string[]> = {
 };
 
 export function getNationalColors(code: string): string[] {
-  return NATIONAL_COLORS[code] ?? ['#333','#666','#999'];
+  if (!code) return ['#333', '#666', '#999'];
+  return NATIONAL_COLORS[code.toUpperCase()] ?? ['#333', '#666', '#999'];
 }
