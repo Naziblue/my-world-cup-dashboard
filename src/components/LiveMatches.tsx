@@ -428,33 +428,36 @@ function MatchHero({ fixture, lang, onClick, className = 'mb-4' }: { fixture: Fi
       </div>
 
       {/* Mini event timeline bar */}
-      {(live || finished) && (fixture.events?.length ?? 0) > 0 && (() => {
+      {(live || finished) && (() => {
         const maxMin = finished ? 90 : Math.max(fixture.status.elapsed ?? 90, 90);
         const keyEvents = (fixture.events ?? []).filter(e => e.type === 'goal' || e.type === 'red-card');
         return (
           <div className="relative px-6 pb-3">
             {/* Track */}
-            <div className="relative h-[6px] rounded-full bg-white/[0.06] overflow-visible">
+            <div className="relative h-[6px] rounded-full bg-white/10 overflow-visible">
               {/* Elapsed fill */}
               <div
                 className="absolute top-0 left-0 h-full rounded-full"
                 style={{
                   width: `${Math.min(((fixture.status.elapsed ?? (['HT','INT','BT'].includes(fixture.status.short) ? 45 : finished ? 90 : 0)) / maxMin) * 100, 100)}%`,
                   background: live
-                    ? 'linear-gradient(90deg, rgba(225,29,72,0.3), rgba(225,29,72,0.5))'
-                    : 'rgba(255,255,255,0.08)',
+                    ? 'linear-gradient(90deg, #f43f5e, #e11d48)'
+                    : 'rgba(255,255,255,0.15)',
                 }}
               />
               {/* Half-time marker */}
-              <div className="absolute top-0 bottom-0 w-px bg-white/10" style={{ left: '50%' }} />
+              <div className="absolute top-0 bottom-0 w-px bg-white/20" style={{ left: '50%' }} />
               {/* Event markers */}
               {keyEvents.map((ev, i) => (
                 <div
                   key={i}
-                  className="absolute -top-[5px] group cursor-default"
-                  style={{ left: `${Math.min((ev.minute / maxMin) * 100, 99)}%`, transform: 'translateX(-50%)' }}
+                  className="absolute top-1/2 w-4 h-4 flex items-center justify-center group cursor-default z-10"
+                  style={{
+                    left: `${Math.min((ev.minute / maxMin) * 100, 99)}%`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
                 >
-                  <span className="text-[10px] leading-none select-none">
+                  <span className="text-[10px] select-none leading-none flex items-center justify-center">
                     {ev.type === 'goal' ? '⚽' : '🟥'}
                   </span>
                   {/* Tooltip */}
