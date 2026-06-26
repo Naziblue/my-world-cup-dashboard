@@ -198,7 +198,7 @@ function HeroEventsAndStats({ fixture, lang }: { fixture: Fixture; lang: 'en' | 
   );
 }
 
-function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 'fa'; onClick?: () => void }) {
+function MatchHero({ fixture, lang, onClick, className = 'mb-4' }: { fixture: Fixture; lang: 'en' | 'fa'; onClick?: () => void; className?: string }) {
   const live = isMatchLive(fixture.status.short);
   const finished = isMatchFinished(fixture.status.short);
   const upcoming = isMatchUpcoming(fixture.status.short);
@@ -230,7 +230,7 @@ function MatchHero({ fixture, lang, onClick }: { fixture: Fixture; lang: 'en' | 
 
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden shadow-2xl mb-4 border ${borderColor}`}
+      className={`relative rounded-2xl overflow-hidden shadow-2xl border ${borderColor} ${className}`}
       style={{ boxShadow: shadowColor }}
     >
       {/* Home national color strip — left edge */}
@@ -617,8 +617,7 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
     );
   }
 
-  // Phase 1: Hero selection — live > last finished > first upcoming
-  const liveMatch = displayedFixtures.find(f => isMatchLive(f.status.short));
+  const liveMatches = displayedFixtures.filter(f => isMatchLive(f.status.short));
   const finishedByRecency = displayedFixtures
     .filter(f => isMatchFinished(f.status.short))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -626,13 +625,18 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
     .filter(f => isMatchUpcoming(f.status.short))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const heroMatch = liveMatch ?? finishedByRecency[0] ?? upcomingByTime[0] ?? null;
+  // All live matches go to the top, next to each other.
+  // If no live matches, select the single hero match.
+  const heroMatches = liveMatches.length > 0
+    ? liveMatches
+    : (finishedByRecency[0] ? [finishedByRecency[0]] : (upcomingByTime[0] ? [upcomingByTime[0]] : []));
 
-  const scheduleMatches = displayedFixtures.filter(f => heroMatch && f.id !== heroMatch.id);
+  const heroIds = new Set(heroMatches.map(m => m.id));
+  const scheduleMatches = displayedFixtures.filter(f => !heroIds.has(f.id));
   const scheduleUpcoming = scheduleMatches.filter(f => isMatchUpcoming(f.status.short))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const scheduleFinished = scheduleMatches.filter(f => isMatchFinished(f.status.short))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const scheduleRow = [...scheduleUpcoming, ...scheduleFinished];
 
   return (
@@ -640,10 +644,10 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
       {/* Section header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <Radio className={liveMatch ? 'text-rose-500 animate-pulse' : 'text-stadium-gray'} size={16} />
+          <Radio className={liveMatches.length > 0 ? 'text-rose-500 animate-pulse' : 'text-stadium-gray'} size={16} />
           <h2 className="text-[11px] uppercase font-extrabold tracking-widest text-white flex items-center gap-2">
             {t("Today's Matches", lang)}
-            {liveMatch && (
+            {liveMatches.length > 0 && (
               <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] px-1.5 py-0.5 rounded font-black tracking-widest uppercase animate-pulse">
                 {t('LIVE NOW', lang)}
               </span>
@@ -665,7 +669,13 @@ export default function LiveMatches({ fixtures, nextRefreshSeconds, lang, pinned
         </div>
       ) : (
         <>
-          {heroMatch && <MatchHero fixture={heroMatch} lang={lang} onClick={() => onMatchClick?.(heroMatch)} />}
+          {heroMatches.length > 0 && (
+            <div className={`grid grid-cols-1 ${heroMatches.length > 1 ? 'lg:grid-cols-2' : ''} gap-4 mb-4`}>
+              {heroMatches.map(fixture => (
+                <MatchHero key={fixture.id} fixture={fixture} lang={lang} className="mb-0" onClick={() => onMatchClick?.(fixture)} />
+              ))}
+            </div>
+          )}
 
           {scheduleRow.length > 0 && (
             <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin items-stretch justify-start">
